@@ -10,6 +10,9 @@ export default function Home() {
   return (
     <>
       <section className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+        <div className="shrink-0 sm:hidden">
+          <Mascot mood="happy" cosmetic="sunglasses" size={92} />
+        </div>
         <img
           src="/profile.webp"
           alt="Jonathan Chiu"
