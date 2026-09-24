@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cream: #FDFAF5;
+  --sand: #F2CEAB;
+  --ink: #2B1A0C;
+  --orange: #D88248;
+  --orange-text: #A34E1E;
+  --muted: #6B5238;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cream: #1A120B;
+    --sand: #2B1D12;
+    --ink: #F5E6D3;
+    --orange: #D88248;
+    --orange-text: #E8A06A;
+    --muted: #B89B7A;
+  }
+}
+
+html {
+  background: var(--cream);
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3 {
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+/* Inline code (API routes, flags) can contain long slash-delimited strings
+   with no natural break point, which overflows narrow viewports. */
+code {
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    /* The spec requires transforms disabled entirely under reduced motion,
+       not just slowed — otherwise hover lifts (ProjectCard's
+       hover:-translate-y-0.5) and the mascot cosmetic drop still move. */
+    transform: none !important;
+  }
+}
