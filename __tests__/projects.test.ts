@@ -1,4 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
+import { writeFileSync, unlinkSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import {
   getAllProjects,
   getFeaturedProjects,
@@ -8,6 +10,8 @@ import {
   selectFeatured,
   type Project,
 } from '@/lib/projects';
+
+const CONTENT_DIR = join(process.cwd(), 'content', 'projects');
 
 function makeProject(overrides: Partial<Project>): Project {
   return {
@@ -65,6 +69,45 @@ describe('getProject', () => {
 
   it('returns null for an unknown slug', () => {
     expect(getProject('does-not-exist')).toBeNull();
+  });
+
+  it('reads coverWidth and coverHeight from the real bento.mdx frontmatter', () => {
+    const bento = getProject('bento');
+    expect(bento?.coverWidth).toBe(768);
+    expect(bento?.coverHeight).toBe(1586);
+  });
+});
+
+describe('parse() cover dimension fallback', () => {
+  const fixtureSlug = '__test-fixture-no-cover-dims__';
+  const fixturePath = join(CONTENT_DIR, `${fixtureSlug}.mdx`);
+
+  afterEach(() => {
+    if (existsSync(fixturePath)) unlinkSync(fixturePath);
+  });
+
+  it('defaults to 768x1024 when frontmatter omits coverWidth/coverHeight', () => {
+    writeFileSync(
+      fixturePath,
+      [
+        '---',
+        'title: Fixture',
+        "year: '2020'",
+        'hook: A fixture project with no cover dimensions in frontmatter.',
+        "stack: ['TypeScript']",
+        'repo: https://github.com/example/fixture',
+        'cover: /projects/fixture/cover',
+        'featured: false',
+        '---',
+        '',
+        'Body content long enough to be a plausible project write-up for the test fixture.',
+      ].join('\n')
+    );
+
+    const fixture = getAllProjects().find((p) => p.slug === fixtureSlug);
+    expect(fixture).toBeTruthy();
+    expect(fixture?.coverWidth).toBe(768);
+    expect(fixture?.coverHeight).toBe(1024);
   });
 });
 
