@@ -212,8 +212,16 @@ the cosmetics 200–450KB. Committing them raw would make the site unusable on a
 phone. Target: no single image over 200KB, hero images under
 100KB.
 
-Images are served through `next/image` with explicit `width` and `height` so
-layout never shifts during load.
+Static export (`output: 'export'`) turns off Next's on-demand image optimizer,
+so `next/image` would ship a single full-size file to every device no matter
+what `sizes` says. Responsive images are therefore generated at build-prep
+time: the asset script emits each screenshot at 480px, 768px, and 1200px wide
+in WebP, and a `Screenshot` component renders a plain `<img>` with an explicit
+`srcset` and `sizes`. `next/image` is configured `unoptimized: true` and used
+only where a single fixed-size asset is correct, such as logos and the mascot.
+
+Every image carries explicit `width` and `height` so layout never shifts
+during load.
 
 ## Accessibility
 
@@ -251,9 +259,9 @@ tags wrap freely and never scroll sideways. The mascot shrinks and sits above
 the name instead of beside it. The nav collapses to a simple row of three
 links, which fits at 320px and avoids needing a hamburger menu at all.
 
-**Images.** Screenshots are served responsively through `next/image` with
-`sizes="(max-width: 768px) 100vw, 768px"`, so phones never download a
-desktop-width file. Tall app screenshots are capped at 70vh so a single image
+**Images.** Screenshots are served responsively through the `Screenshot`
+component's `srcset` with `sizes="(max-width: 768px) 100vw, 768px"`, so phones
+download the 480px file rather than a desktop-width one. Tall app screenshots are capped at 70vh so a single image
 cannot fill the entire screen and stall scrolling. Every image has explicit
 dimensions, so nothing shifts as the page loads.
 
