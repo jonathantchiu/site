@@ -40,15 +40,24 @@ function parse(filename: string): Project {
   };
 }
 
+export function sortByYearDesc(projects: Project[]): Project[] {
+  return [...projects].sort((a, b) => b.year.localeCompare(a.year));
+}
+
+export function selectFeatured(projects: Project[]): Project[] {
+  return projects.filter((p) => p.featured);
+}
+
 export function getAllProjects(): Project[] {
-  return readdirSync(CONTENT_DIR)
-    .filter((f) => f.endsWith('.mdx'))
-    .map(parse)
-    .sort((a, b) => b.year.localeCompare(a.year));
+  return sortByYearDesc(
+    readdirSync(CONTENT_DIR)
+      .filter((f) => f.endsWith('.mdx'))
+      .map(parse)
+  );
 }
 
 export function getFeaturedProjects(): Project[] {
-  return getAllProjects().filter((p) => p.featured);
+  return selectFeatured(getAllProjects());
 }
 
 export function getProject(slug: string): Project | null {
