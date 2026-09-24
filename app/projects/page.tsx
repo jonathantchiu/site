@@ -1,5 +1,5 @@
 import { getAllProjects } from '@/lib/projects';
-import { ProjectCard } from '@/components/ProjectCard';
+import { EntryRow } from '@/components/EntryRow';
 import { Reveal } from '@/components/Reveal';
 
 export const metadata = { title: 'Projects — Jonathan Chiu' };
@@ -14,10 +14,16 @@ export default function ProjectsPage() {
         Things I built, why I built them, and what broke along the way.
       </p>
 
-      <div className="mt-10 flex flex-col gap-10">
+      <div className="mt-10 flex flex-col gap-4">
         {projects.map((project, i) => (
           <Reveal key={project.slug} delay={i * 0.08}>
-            <ProjectCard project={project} />
+            <EntryRow
+              href={`/projects/${project.slug}`}
+              logo={`${project.cover}-480.webp`}
+              title={project.title}
+              subtitle={project.hook}
+              date={project.year}
+            />
           </Reveal>
         ))}
       </div>

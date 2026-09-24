@@ -1,4 +1,5 @@
 import { ROLES } from '@/lib/experience';
+import { EntryRow } from '@/components/EntryRow';
 import { ExperienceItem } from '@/components/ExperienceItem';
 import { Reveal } from '@/components/Reveal';
 
@@ -11,8 +12,18 @@ export default function ExperiencePage() {
 
       <div className="mt-10 flex flex-col gap-8">
         {ROLES.map((role, i) => (
-          <Reveal key={role.org} delay={i * 0.08}>
-            <ExperienceItem role={role} />
+          <Reveal key={role.id} delay={i * 0.08}>
+            <div id={role.id} className="scroll-mt-24">
+              <EntryRow
+                href={`/experience#${role.id}`}
+                logo={role.logo}
+                title={role.org}
+                subtitle={role.title}
+                date={`${role.dates} · ${role.location}`}
+                blurb={role.blurb}
+              />
+              <ExperienceItem role={role} />
+            </div>
           </Reveal>
         ))}
       </div>

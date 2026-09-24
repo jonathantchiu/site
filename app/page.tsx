@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getFeaturedProjects } from '@/lib/projects';
-import { ProjectCard } from '@/components/ProjectCard';
+import { ROLES } from '@/lib/experience';
+import { EntryRow } from '@/components/EntryRow';
 import { Reveal } from '@/components/Reveal';
 import { MascotScene } from '@/components/MascotScene';
 import { assetPath } from '@/lib/assetPath';
@@ -36,11 +37,41 @@ export default function Home() {
       </section>
 
       <section className="mt-14">
+        <h2 className="font-[family-name:var(--font-display)] text-3xl">Experience</h2>
+        <div className="mt-6 flex flex-col gap-4">
+          {ROLES.map((role, i) => (
+            <Reveal key={role.id} delay={i * 0.08}>
+              <EntryRow
+                href={`/experience#${role.id}`}
+                logo={role.logo}
+                title={role.org}
+                subtitle={role.title}
+                date={role.dates}
+                blurb={role.blurb}
+              />
+            </Reveal>
+          ))}
+        </div>
+        <Link
+          href="/experience"
+          className="mt-6 inline-flex min-h-[44px] items-center text-accent-text underline decoration-2 underline-offset-4"
+        >
+          All experience
+        </Link>
+      </section>
+
+      <section className="mt-14">
         <h2 className="font-[family-name:var(--font-display)] text-3xl">Projects</h2>
-        <div className="mt-6 flex flex-col gap-8">
+        <div className="mt-6 flex flex-col gap-4">
           {featured.map((project, i) => (
             <Reveal key={project.slug} delay={i * 0.08}>
-              <ProjectCard project={project} />
+              <EntryRow
+                href={`/projects/${project.slug}`}
+                logo={`${project.cover}-480.webp`}
+                title={project.title}
+                subtitle={project.hook}
+                date={project.year}
+              />
             </Reveal>
           ))}
         </div>
