@@ -190,18 +190,53 @@ layout never shifts during load.
 - A skip-to-content link opens the tab order.
 - Semantic landmarks: one `<h1>` per page, `<nav>`, `<main>`, `<footer>`.
 
-## Responsive
+## Responsive and Mobile Readability
 
-Mobile-first. One breakpoint at 768px. At phone width: single column, 16px side
-gutters, no horizontal scroll, mascot shrinks or hides, nav collapses to a
-simple menu. The site is checked at 375px before it is called done.
+Mobile-first, with one breakpoint at 768px. Most readers will open this on a
+phone from a link in an application or a group chat, so phone layout is the
+default the site is designed at, not a shrunken desktop.
+
+**Reading comfort.** Body text is 17px minimum on phones, never the 14px that
+looks tidy in a mockup and is unreadable in daylight. Line height is 1.6 on
+body copy and 1.25 on headings. Measure is capped at 68 characters so lines do
+not run edge to edge. Side gutters are 16px minimum, and no element may cause
+horizontal scroll at any width down to 320px.
+
+**Type scale.** Headings shrink on phones rather than wrapping into four-line
+blocks: the `h1` drops from 48px to 32px, `h2` from 32px to 24px. Headings use
+`text-wrap: balance` so they break evenly.
+
+**Touch.** Every link, button, and card hit area is at least 44×44px. Nav items
+get vertical padding to reach that height even though the text is short.
+Adjacent tap targets are separated by at least 8px so neighbors are not hit by
+accident.
+
+**Layout at phone width.** Everything is a single column. Project cards stack
+with the screenshot above the text. Experience entries put the logo and role on
+one line, dates on the next, rather than compressing a two-column row. Stack
+tags wrap freely and never scroll sideways. The mascot shrinks and sits above
+the name instead of beside it. The nav collapses to a simple row of three
+links, which fits at 320px and avoids needing a hamburger menu at all.
+
+**Images.** Screenshots are served responsively through `next/image` with
+`sizes="(max-width: 768px) 100vw, 768px"`, so phones never download a
+desktop-width file. Tall app screenshots are capped at 70vh so a single image
+cannot fill the entire screen and stall scrolling. Every image has explicit
+dimensions, so nothing shifts as the page loads.
+
+**Verification.** The site is checked in a real mobile viewport at 320px,
+375px, and 390px before it is called done. The check is not "does it fit" but
+"is it comfortable to read": no horizontal scroll, no text under 17px, no tap
+target under 44px, no heading wrapping past three lines.
 
 ## Testing
 
 - Build check: `next build` completes with no type errors.
 - Content check: every MDX file parses, and every project renders at its route.
 - Link check: no internal link 404s; external repo links resolve.
-- Manual pass at 375px and 1440px, with reduced motion both on and off.
+- Manual pass at 320px, 375px, 390px, and 1440px, with reduced motion both on
+  and off. The phone widths check readability against the rules in the
+  responsive section, not just that the layout fits.
 - Lighthouse: performance and accessibility both 90+.
 
 ## Open Decisions
