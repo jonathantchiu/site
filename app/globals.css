@@ -46,6 +46,76 @@ code {
   overflow-wrap: anywhere;
 }
 
+/* Cardboard box reveal (components/BoxReveal.tsx, components/CardboardBox.tsx).
+   `box-sitting` is the resting pose: rotated slightly so the box reads as
+   dropped onto the section rather than placed dead-center. `box-tumble` is
+   the unattended path (nobody clicked, it just topples on its own).
+   `box-knocked` is the click path: a sharper flinch before it goes, timed
+   to sit under the cat's pounce. `cat-pounce` swoops the cat sprite in from
+   the side and back out. Durations here must match TUMBLE_DURATION in
+   BoxReveal.tsx (550ms) so the overlay unmounts right as the animation
+   finishes, not before or after. */
+.box-sitting {
+  transform: rotate(-2deg) scale(1.03);
+}
+
+@keyframes box-tumble-auto {
+  0% {
+    transform: rotate(-2deg) scale(1.03) translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-40deg) scale(1.03) translate(-18%, 65%);
+    opacity: 0;
+  }
+}
+
+.box-tumble {
+  animation: box-tumble-auto 550ms ease-in forwards;
+}
+
+@keyframes box-tumble-knocked {
+  0% {
+    transform: rotate(-2deg) scale(1.03) translate(0, 0);
+    opacity: 1;
+  }
+  25% {
+    transform: rotate(10deg) scale(1.03) translate(5%, -3%);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(58deg) scale(1.03) translate(75%, 50%);
+    opacity: 0;
+  }
+}
+
+.box-knocked {
+  animation: box-tumble-knocked 550ms cubic-bezier(0.3, 0.7, 0.4, 1) forwards;
+}
+
+@keyframes cat-pounce-in {
+  0% {
+    transform: translate(-120%, 30%) scale(0.7);
+    opacity: 0;
+  }
+  35% {
+    transform: translate(-55%, -8%) scale(1.05);
+    opacity: 1;
+  }
+  65% {
+    transform: translate(-45%, 0%) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(10%, 15%) scale(0.85);
+    opacity: 0;
+  }
+}
+
+.cat-pounce {
+  animation: cat-pounce-in 550ms ease-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
