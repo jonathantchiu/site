@@ -69,7 +69,7 @@ detail that makes the site read as hand-made.
 - Name, and a one-line description of who he is.
 - Profile photo, sourced from `Recruitment/2026 Recruitment/ProfilePhoto.jpg`,
   cropped to a circle with an ink outline.
-- One Bento pet sprite as a small mascot accent beside the hero.
+- The Bento cat sprite as a small mascot accent beside the hero.
 - Two featured project cards (Bento, Cognify) linking to their detail pages.
 - A one-line mention of UCLA DevX / BruinChat as current club work.
 - Links: GitHub, LinkedIn, email.
@@ -126,7 +126,8 @@ Motion is polish, never spectacle. Three effects total:
 
 1. Sections fade and rise 12px as they enter the viewport, once, not on every scroll.
 2. Project and experience cards lift 2px on hover, with the offset shadow growing.
-3. The hero mascot swaps mood art once when the user scrolls past the hero.
+3. The hero mascot swaps mood art once when the user scrolls past the hero, and
+   a cosmetic drops onto it on hover.
 
 Everything above is wrapped in a `prefers-reduced-motion: reduce` guard that
 disables transforms and transitions entirely. There is no scroll-jacking, no
@@ -148,10 +149,12 @@ components/
   Nav.tsx             Site header, active-link state, mobile menu
   ProjectCard.tsx     Card used on home and projects index
   ExperienceItem.tsx  Role entry with logo, dates, bullets
-  Mascot.tsx          Bento pet sprite, mood state
+  Mascot.tsx          Bento cat sprite, mood state, cosmetic overlay
   Reveal.tsx          Scroll-reveal wrapper, reduced-motion aware
 content/projects/     One MDX file per project
-lib/projects.ts       Reads and parses MDX frontmatter, sorts, filters featured
+lib/
+  projects.ts         Reads and parses MDX frontmatter, sorts, filters featured
+  cosmetics.ts        Anchor table placing a cosmetic on the cat sprite
 public/
   logos/              sofi, ucla, devx, deca
   projects/           Project screenshots, WebP
@@ -167,6 +170,36 @@ source later touches that one file.
 Every animated section wraps in it, so the reduced-motion guard lives in one
 place and cannot be forgotten at a call site.
 
+### Mascot and cosmetics
+
+The cat is the only pet used, and the four Bento scene backdrops are not used
+at all — they are app backgrounds that would fight the page rather than sit on
+it.
+
+Cosmetic placement is not guesswork. Bento already solved it in
+`NekoFinance/src/data/cosmeticAnchors.ts`, where each anchor is expressed as a
+fraction of the pet's bounding box. Those fractions port straight to CSS
+percentages inside a relatively-positioned sprite wrapper. The cat/happy row,
+copied exactly:
+
+| Cosmetic | x | y | width | height | rotate |
+|---|---|---|---|---|---|
+| `cowboy-hat` | 0.1865 | -0.0487 | 0.5263 | 0.4626 | 15.8 |
+| `chef-hat` | 0.1646 | -0.0743 | 0.3657 | 0.3907 | -7.5 |
+| `sunglasses` | 0.1825 | 0.2006 | 0.3498 | 0.3338 | -5.1 |
+| `sport-glasses` | 0.1407 | 0.1777 | 0.4383 | 0.3497 | -6.2 |
+| `bughunter-toy` | 0.0113 | 0.6674 | 0.3597 | 0.3438 | 0 |
+
+The negative `y` values on hats are correct, not typos: the crown of the hat
+sits above the top edge of the sprite box, so the wrapper must not clip
+overflow.
+
+One inherited inconsistency must be normalized on the way in. Bento's anchor
+table keys hats as `'cowboy hat'` with a space, while its asset table keys the
+same item as `cowboy_hat`, and `sport-glasses` versus `sport_glasses` diverges
+the same way. Copying both tables verbatim yields a cosmetic that renders with
+no position. This site uses kebab-case ids throughout, as in the table above.
+
 ## Assets
 
 Source art comes from the public `bento-money` repo, so nothing private is
@@ -174,9 +207,9 @@ required for the site to build. The `bento-site` screenshots are copied in from
 a private repo as files — they ship as ordinary images in `public/`.
 
 Every image is converted to WebP and resized before being committed. This is a
-hard requirement, not a nicety: the source scene PNGs are 1.3–1.6MB each and
-the pet sprites are 300–500KB each. Committing them raw would make the site
-unusable on a phone. Target: no single image over 200KB, hero images under
+hard requirement, not a nicety: the source pet sprites are 300–500KB each and
+the cosmetics 200–450KB. Committing them raw would make the site unusable on a
+phone. Target: no single image over 200KB, hero images under
 100KB.
 
 Images are served through `next/image` with explicit `width` and `height` so
