@@ -116,6 +116,38 @@ code {
   animation: cat-pounce-in 550ms ease-out forwards;
 }
 
+/* Bug hunt (components/BugHunt.tsx). The bug walks along a narrow band
+   near the top or bottom edge of the viewport (chosen at random in
+   BugHunt.tsx) rather than through the centered text column. `left` is
+   animated so it can start just offscreen and exit just offscreen on the
+   other side; direction depends on which one is picked. Duration must
+   match CROSSING_DURATION_MS in BugHunt.tsx (6000ms). */
+@keyframes bug-crossing-forward {
+  0% {
+    left: -8%;
+  }
+  100% {
+    left: 104%;
+  }
+}
+
+@keyframes bug-crossing-backward {
+  0% {
+    left: 104%;
+  }
+  100% {
+    left: -8%;
+  }
+}
+
+.bug-crossing {
+  animation: bug-crossing-forward 6000ms linear forwards;
+}
+
+.bug-crossing-reverse {
+  animation: bug-crossing-backward 6000ms linear forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

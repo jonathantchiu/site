@@ -47,7 +47,7 @@ export const ROLES: Role[] = [
     location: 'Renton, WA',
     logo: '/logos/deca.webp',
     blurb:
-      'Built a Java ETL tool that automated weekly financial reporting and cut both manual work and pipeline runtime on growing CSV and Excel datasets.',
+      'Built a Java ETL tool that automated weekly financial reporting and cut both manual work and pipeline runtime on 10K+ record CSV and Excel datasets.',
     bullets: [
       'Delivered a Java ETL tool that parses, cleans, and visualizes financial data from CSV and Excel, cutting 10+ hours of manual work a week.',
       'Cut pipeline runtime 60% and memory 40% on 10K+ record datasets by replacing linear scans with hash lookups and batching the sort.',

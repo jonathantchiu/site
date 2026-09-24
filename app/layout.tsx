@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Fredoka } from 'next/font/google';
 import { Nav } from '@/components/Nav';
+import { BugHunt } from '@/components/BugHunt';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
         <footer className="mx-auto max-w-3xl border-t border-hairline px-4 py-8 text-[17px] text-muted">
           Built by Jonathan Chiu.
+          <BugHunt />
         </footer>
       </body>
     </html>
