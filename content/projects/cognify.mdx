@@ -48,31 +48,31 @@ needs no API key and no database.
 
 ## Screenshots
 
-<Screenshot base="/projects/cognify/notes" alt="Cognify notes list with a note selected and generation options for flashcards, quiz, or study plan" width={1200} height={872} />
+<Screenshot base="/projects/cognify/notes" alt="Cognify notes list with a note selected and generation options for flashcards, quiz, or study plan" width="1200" height="872" />
 
 Every note (or group of notes) offers the same three generation actions in one
 place, which is the `POST /api/{notes|groups}/{id}/{kind}` shape from the API
 made visible in the UI — one mental model instead of three separate flows.
 
-<Screenshot base="/projects/cognify/flashcard_practice" alt="Cognify flashcard practice view with a flipped card and shuffle control" width={1200} height={883} />
+<Screenshot base="/projects/cognify/flashcard_practice" alt="Cognify flashcard practice view with a flipped card and shuffle control" width="1200" height="883" />
 
 Flip, shuffle, and keyboard navigation live here. The card flips in place
 rather than swapping to a new element, so the position in the deck stays
 visually anchored while studying.
 
-<Screenshot base="/projects/cognify/quiz_practice" alt="Cognify quiz practice view with a multiple-choice question and per-question reveal" width={1200} height={885} />
+<Screenshot base="/projects/cognify/quiz_practice" alt="Cognify quiz practice view with a multiple-choice question and per-question reveal" width="1200" height="885" />
 
 Each question reveals correctness immediately on answer rather than batching
-feedback to the end, since the point of a generated quiz is catching a gap
-while the material is still fresh, not producing a score.
+feedback to the end, so a generated quiz surfaces a gap while the material is
+still fresh instead of only totaling it up in a final score at the finish.
 
-<Screenshot base="/projects/cognify/plan_practice" alt="Cognify study plan view with a seven-day checklist and per-day progress" width={1200} height={883} />
+<Screenshot base="/projects/cognify/plan_practice" alt="Cognify study plan view with a seven-day checklist and per-day progress" width="1200" height="883" />
 
 The generated seven-day plan is a checklist, not a document — progress is
 tracked per task and persists per note or group, so opening the plan on day
 four shows exactly what is still outstanding rather than the whole plan again.
 
-<Screenshot base="/projects/cognify/groups" alt="Cognify note groups view showing several lectures combined into one generation source" width={1200} height={876} />
+<Screenshot base="/projects/cognify/groups" alt="Cognify note groups view showing several lectures combined into one generation source" width="1200" height="876" />
 
 Grouping is what makes a midterm-scale study set possible: several lectures'
 notes combine into one source, and one generation call produces flashcards or

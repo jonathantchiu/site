@@ -12,8 +12,8 @@ export function Screenshot({
   base: string;
   alt: string;
   className?: string;
-  width?: number;
-  height?: number;
+  width?: number | string;
+  height?: number | string;
 }) {
   const srcSet = WIDTHS.map((w) => `${assetPath(`${base}-${w}.webp`)} ${w}w`).join(', ');
 
@@ -23,8 +23,8 @@ export function Screenshot({
       srcSet={srcSet}
       sizes="(max-width: 768px) 100vw, 768px"
       alt={alt}
-      width={width}
-      height={height}
+      width={Number(width)}
+      height={Number(height)}
       loading="lazy"
       decoding="async"
       className={`h-auto w-full max-h-[70vh] object-contain rounded-card border-2 border-ink ${className}`}

@@ -47,39 +47,39 @@ box so the same numbers work at any render size.
 
 ## Screenshots
 
-<Screenshot base="/projects/bento/home" alt="Bento home screen showing today's remaining budget, the pet, and a running list of today's expenses" width={1200} height={2478} />
+<Screenshot base="/projects/bento/home" alt="Bento home screen showing today's remaining budget, the pet, and a running list of today's expenses" width="1200" height="2478" />
 
 The home screen leads with the number that matters — what is left to spend
 today — rather than a running total or a chart. The pet sits right under it so
 the emotional read ("am I doing okay") and the financial read happen in the
 same glance.
 
-<Screenshot base="/projects/bento/journal" alt="Bento expense journal grouped by day with category icons and amounts" width={1200} height={2485} />
+<Screenshot base="/projects/bento/journal" alt="Bento expense journal grouped by day with category icons and amounts" width="1200" height="2485" />
 
 Every logged expense lands here, grouped by day. Logging is deliberately the
 only heavy interaction in the app — everything else (the pet, the budget bar)
 is read-only, so the one thing that requires typing gets its own dedicated,
 uncluttered screen.
 
-<Screenshot base="/projects/bento/money" alt="Bento money screen with the daily allowance breakdown and a rollover indicator" width={1200} height={2482} />
+<Screenshot base="/projects/bento/money" alt="Bento money screen with the daily allowance breakdown and a rollover indicator" width="1200" height="2482" />
 
 This is where the daily allowance is actually computed — rollover from days
 under budget, a warning state for days over. It is the one screen that exposes
 the math behind the pet's mood, for anyone who wants to check it.
 
-<Screenshot base="/projects/bento/pet" alt="Bento pet screen with the cat, its XP bar, and equipped cosmetics" width={1200} height={2484} />
+<Screenshot base="/projects/bento/pet" alt="Bento pet screen with the cat, its XP bar, and equipped cosmetics" width="1200" height="2484" />
 
 The pet detail screen is where XP and equipped cosmetics live. This is the
 view the anchor-table bug (below) broke: cosmetics were marked equipped in
 state but rendered nowhere on this exact screen.
 
-<Screenshot base="/projects/bento/stats" alt="Bento stats screen with a week-over-week spending trend line" width={1200} height={2481} />
+<Screenshot base="/projects/bento/stats" alt="Bento stats screen with a week-over-week spending trend line" width="1200" height="2481" />
 
 A week-over-week trend line, added after the first two weeks of using the app
 myself made clear that a single day's number was not enough to tell if a habit
 was forming or just a lucky day.
 
-<Screenshot base="/projects/bento/store" alt="Bento store screen listing cosmetics purchasable with earned pet XP" width={1200} height={2487} />
+<Screenshot base="/projects/bento/store" alt="Bento store screen listing cosmetics purchasable with earned pet XP" width="1200" height="2487" />
 
 Cosmetics are bought with XP earned from staying under budget, not real money
 — the store is the payoff loop, not a monetization surface.

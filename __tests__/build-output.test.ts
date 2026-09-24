@@ -40,4 +40,29 @@ describe('static export output', () => {
       expect(html, file).not.toMatch(/opacity:0(?![.\d])/);
     }
   });
+
+  // Guards against next-mdx-remote v6 silently dropping expression-valued
+  // JSX attributes (width={1200} height={2478}) on <Screenshot /> used
+  // inside MDX. When that happens every inline screenshot silently falls
+  // back to the Screenshot component's defaults (width=768 height=1024),
+  // which reserves the wrong aspect ratio and causes layout shift. None of
+  // the real screenshots referenced from bento.mdx or cognify.mdx are
+  // actually 768x1024, so that exact pairing appearing on an <img> in
+  // either page's output means the dimensions were dropped, not that they
+  // were genuinely correct.
+  it('preserves real screenshot dimensions from MDX instead of falling back to Screenshot defaults', () => {
+    for (const page of ['projects/bento.html', 'projects/cognify.html']) {
+      const file = join(OUT_DIR, page);
+      const html = readFileSync(file, 'utf8');
+      const imgTags = html.match(/<img\b[^>]*>/g) ?? [];
+      expect(imgTags.length).toBeGreaterThan(0);
+
+      for (const tag of imgTags) {
+        const isDefaultDims = /width="768"/.test(tag) && /height="1024"/.test(tag);
+        expect(isDefaultDims, `${page} img carries dropped-attribute default dimensions: ${tag}`).toBe(
+          false,
+        );
+      }
+    }
+  });
 });
