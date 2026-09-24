@@ -12,6 +12,8 @@ export interface Project {
   stack: string[];
   repo: string;
   cover: string;
+  coverWidth: number;
+  coverHeight: number;
   featured: boolean;
   content: string;
 }
@@ -35,6 +37,8 @@ function parse(filename: string): Project {
     stack: data.stack as string[],
     repo: String(data.repo),
     cover: String(data.cover),
+    coverWidth: data.coverWidth !== undefined ? Number(data.coverWidth) : 768,
+    coverHeight: data.coverHeight !== undefined ? Number(data.coverHeight) : 1024,
     featured: Boolean(data.featured),
     content,
   };

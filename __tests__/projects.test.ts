@@ -18,6 +18,8 @@ function makeProject(overrides: Partial<Project>): Project {
     stack: ['TypeScript'],
     repo: 'https://github.com/example/placeholder',
     cover: '/projects/placeholder/cover',
+    coverWidth: 768,
+    coverHeight: 1024,
     featured: false,
     content: 'x'.repeat(250),
     ...overrides,

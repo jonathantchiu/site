@@ -12,6 +12,8 @@ const project: Project = {
   stack: ['React Native', 'Expo'],
   repo: 'https://github.com/jonathantchiu/bento-money',
   cover: '/projects/bento/home',
+  coverWidth: 768,
+  coverHeight: 1586,
   featured: true,
   content: 'body',
 };
@@ -66,5 +68,13 @@ describe('ProjectCard', () => {
     render(<ProjectCard project={project} />);
     const link = screen.getByRole('link', { name: /Bento/ });
     expect(link.getAttribute('href')).toBe('/projects/bento');
+  });
+
+  it("renders the cover at the project's frontmatter dimensions, not Screenshot's default", () => {
+    render(<ProjectCard project={project} />);
+    const img = screen.getByAltText('Bento screenshot');
+    expect(img.getAttribute('height')).toBe('1586');
+    expect(img.getAttribute('height')).not.toBe('1024');
+    expect(img.getAttribute('width')).toBe('768');
   });
 });
