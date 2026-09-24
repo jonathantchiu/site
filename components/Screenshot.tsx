@@ -1,3 +1,5 @@
+import { assetPath } from '@/lib/assetPath';
+
 const WIDTHS = [480, 768, 1200];
 
 export function Screenshot({
@@ -13,11 +15,11 @@ export function Screenshot({
   width?: number;
   height?: number;
 }) {
-  const srcSet = WIDTHS.map((w) => `${base}-${w}.webp ${w}w`).join(', ');
+  const srcSet = WIDTHS.map((w) => `${assetPath(`${base}-${w}.webp`)} ${w}w`).join(', ');
 
   return (
     <img
-      src={`${base}-768.webp`}
+      src={assetPath(`${base}-768.webp`)}
       srcSet={srcSet}
       sizes="(max-width: 768px) 100vw, 768px"
       alt={alt}

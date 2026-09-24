@@ -3,6 +3,7 @@ import { getFeaturedProjects } from '@/lib/projects';
 import { ProjectCard } from '@/components/ProjectCard';
 import { Reveal } from '@/components/Reveal';
 import { Mascot } from '@/components/Mascot';
+import { assetPath } from '@/lib/assetPath';
 
 export default function Home() {
   const featured = getFeaturedProjects();
@@ -14,7 +15,7 @@ export default function Home() {
           <Mascot mood="happy" cosmetic="sunglasses" size={92} />
         </div>
         <img
-          src="/profile.webp"
+          src={assetPath('/profile.webp')}
           alt="Jonathan Chiu"
           width={128}
           height={128}
@@ -67,7 +68,7 @@ export default function Home() {
             <li key={label}>
               <a
                 href={href}
-                className="flex min-h-[44px] items-center text-orange-text underline decoration-2 underline-offset-4"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center text-orange-text underline decoration-2 underline-offset-4"
               >
                 {label}
               </a>

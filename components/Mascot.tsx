@@ -1,4 +1,5 @@
 import { anchorStyle, getAnchor, type CosmeticId, type Mood } from '@/lib/cosmetics';
+import { assetPath } from '@/lib/assetPath';
 
 export function Mascot({
   mood = 'happy',
@@ -16,7 +17,7 @@ export function Mascot({
     // the top edge of the sprite box.
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <img
-        src={`/mascot/cat-${mood}.webp`}
+        src={assetPath(`/mascot/cat-${mood}.webp`)}
         alt=""
         width={size}
         height={size}
@@ -24,7 +25,7 @@ export function Mascot({
       />
       {cosmetic && anchor && (
         <img
-          src={`/mascot/cosmetics/${cosmetic}.webp`}
+          src={assetPath(`/mascot/cosmetics/${cosmetic}.webp`)}
           alt=""
           width={Math.round(anchor.width * size)}
           height={Math.round(anchor.height * size)}
