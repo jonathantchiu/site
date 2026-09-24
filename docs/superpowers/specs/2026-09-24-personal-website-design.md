@@ -1,0 +1,213 @@
+# Personal Website — Design Spec
+
+Date: 2026-09-24
+Owner: Jonathan Chiu
+
+## Purpose
+
+A personal site that makes Jonathan's CS projects look good to other students.
+
+The primary audience is club and hackathon application readers (LA Hacks, UCLA
+student orgs), not recruiters. That choice drives everything below: depth over
+breadth on projects, a distinctive visual identity over a resume transcription,
+and no attempt to be an ATS-friendly document.
+
+Success criteria:
+
+- A reader lands on the home page and understands who Jonathan is in under five seconds.
+- Each showcased project has enough depth that a reader can judge real technical work.
+- The site looks deliberately designed, not templated.
+- Adding a new project later means writing one MDX file, nothing else.
+
+## Scope
+
+In scope: home page, projects index, per-project detail pages, experience page.
+
+Out of scope: blog, dark mode toggle, CMS, analytics, contact form, comment
+system, resume PDF hosting. Each is a later decision, not a launch requirement.
+
+## Visual Identity
+
+The palette and line style derive from the artwork in Jonathan's own Bento app
+(`github.com/jonathantchiu/bento-money`): warm cream grounds, burnt orange
+accents, near-black ink, and bold 2–3px outlines on shapes. Reusing his own
+app's visual language means the site's personality is authentically his rather
+than a theme pulled off a shelf.
+
+Tokens, sampled directly from the Bento art and checked for contrast:
+
+| Token | Hex | Role | Contrast on cream / sand |
+|---|---|---|---|
+| `--cream` | `#FDFAF5` | Page background | — |
+| `--sand` | `#F2CEAB` | Card and section backgrounds | — |
+| `--ink` | `#2B1A0C` | Body text, outlines | 16.06 / 11.30 |
+| `--orange` | `#D88248` | Fills, borders, decorative only | 2.80 / 1.97 |
+| `--orange-text` | `#A34E1E` | Link and accent text | 5.50 / 3.87 |
+| `--muted` | `#6B5238` | Dates, captions, secondary text | 6.98 / 4.91 |
+
+Two usage rules follow from those numbers and are not optional. `--orange`
+fails AA at any text size and may only be used for fills, outlines, and
+decoration, never for type. `--orange-text` passes AA on cream but not on sand,
+so on sand backgrounds it is restricted to large text (24px+, or 19px bold).
+
+All six are defined on `:root`. A dark-mode variant is defined under
+`@media (prefers-color-scheme: dark)` so the site does not glare at night, but
+there is no user-facing theme switcher.
+
+Typography: a chunky, friendly sans for headings (Fredoka or Baloo 2) paired
+with a clean, highly legible sans for body (Inter). Two families only. Loaded
+from Google Fonts with `display: swap`.
+
+Shape language: rounded corners at 12–16px, solid 2px ink outlines on cards and
+buttons, and a small offset solid shadow rather than a soft blur. This is the
+detail that makes the site read as hand-made.
+
+## Content
+
+### Home
+
+- Name, and a one-line description of who he is.
+- Profile photo, sourced from `Recruitment/2026 Recruitment/ProfilePhoto.jpg`,
+  cropped to a circle with an ink outline.
+- One Bento pet sprite as a small mascot accent beside the hero.
+- Two featured project cards (Bento, Cognify) linking to their detail pages.
+- A one-line mention of UCLA DevX / BruinChat as current club work.
+- Links: GitHub, LinkedIn, email.
+
+### Projects index
+
+Full-width cards in a single column. Each card carries title, year, a one-line
+hook, stack tags, a screenshot, and a link to the detail page. Two cards at
+launch; the layout must not look broken or empty at that count, which is why it
+is a single column of large cards rather than a grid.
+
+### Project detail pages
+
+One MDX file per project under `content/projects/`. Frontmatter: `title`,
+`year`, `hook`, `stack` (array), `repo`, `cover`, `featured` (boolean).
+
+Body sections, in order: the problem, what was built, how it works
+(architecture), screenshots, what broke and how it was fixed, and a repo link.
+The "what broke" section is deliberate — it is what separates a real writeup
+from a README paraphrase, and it is what a club reader uses to judge whether
+the applicant has actually shipped something.
+
+Launch set:
+
+1. **Bento** — a budgeting app where financial discipline raises a virtual pet.
+   Expo / React Native, Zustand, expo-sqlite as local source of truth, optional
+   Supabase cloud mirror, Jest. Screenshots from the `bento-site` repo
+   (`screenshot-{home,journal,money,pet,stats,store}.jpg`).
+2. **Cognify** — turns student notes into flashcards, quizzes, and study plans.
+   React (Vite) behind Nginx, FastAPI with SQLAlchemy, PostgreSQL 16, OpenAI
+   API, Docker Compose. Screenshots already in the public repo.
+
+### Experience
+
+Same card language as projects. Entries, newest first:
+
+1. **SoFi** — Software Engineering Intern, June–Sept 2026. Guardrail evaluation
+   pipeline for Coach, SoFi's AI financial guidance platform.
+2. **UCLA DevX — BruinChat** — Developer, 2025–Present. Backend for user
+   profiles, class enrollment, and chat-group matching on a multi-developer
+   agile team.
+3. **DECA Inc** — Financial Data Analyst & Development Intern, Sept 2024–June 2025.
+
+Each entry shows a 32px logo mark. Logos are stored in `public/logos/` and
+converted to WebP. Using a company's mark to identify that company next to a
+role is ordinary nominative use.
+
+Education (UCLA, BS Computer Science, expected June 2028) sits at the bottom of
+this page rather than getting its own page.
+
+## Motion
+
+Motion is polish, never spectacle. Three effects total:
+
+1. Sections fade and rise 12px as they enter the viewport, once, not on every scroll.
+2. Project and experience cards lift 2px on hover, with the offset shadow growing.
+3. The hero mascot swaps mood art once when the user scrolls past the hero.
+
+Everything above is wrapped in a `prefers-reduced-motion: reduce` guard that
+disables transforms and transitions entirely. There is no scroll-jacking, no
+parallax world, and no animation that delays content becoming readable.
+
+## Architecture
+
+Next.js App Router with static export (`output: 'export'`), Tailwind CSS,
+deployed on Vercel. Framer Motion for scroll reveals. MDX for project content.
+
+```
+app/
+  layout.tsx          Root layout: fonts, nav, footer, color tokens
+  page.tsx            Home
+  projects/page.tsx   Projects index
+  projects/[slug]/    Project detail, generated from MDX
+  experience/page.tsx Experience
+components/
+  Nav.tsx             Site header, active-link state, mobile menu
+  ProjectCard.tsx     Card used on home and projects index
+  ExperienceItem.tsx  Role entry with logo, dates, bullets
+  Mascot.tsx          Bento pet sprite, mood state
+  Reveal.tsx          Scroll-reveal wrapper, reduced-motion aware
+content/projects/     One MDX file per project
+lib/projects.ts       Reads and parses MDX frontmatter, sorts, filters featured
+public/
+  logos/              sofi, ucla, devx, deca
+  projects/           Project screenshots, WebP
+  mascot/             Pet sprites, WebP
+```
+
+Module boundaries: `lib/projects.ts` is the only code that knows how project
+content is stored. Pages ask it for a list or a single project and never touch
+the filesystem or parse frontmatter themselves. Swapping MDX for any other
+source later touches that one file.
+
+`components/Reveal.tsx` is the only component that knows about Framer Motion.
+Every animated section wraps in it, so the reduced-motion guard lives in one
+place and cannot be forgotten at a call site.
+
+## Assets
+
+Source art comes from the public `bento-money` repo, so nothing private is
+required for the site to build. The `bento-site` screenshots are copied in from
+a private repo as files — they ship as ordinary images in `public/`.
+
+Every image is converted to WebP and resized before being committed. This is a
+hard requirement, not a nicety: the source scene PNGs are 1.3–1.6MB each and
+the pet sprites are 300–500KB each. Committing them raw would make the site
+unusable on a phone. Target: no single image over 200KB, hero images under
+100KB.
+
+Images are served through `next/image` with explicit `width` and `height` so
+layout never shifts during load.
+
+## Accessibility
+
+- Color pairings meet WCAG AA contrast, verified rather than assumed.
+- Every image has alt text; decorative sprites get `alt=""`.
+- Keyboard navigation reaches every link, with a visible focus ring.
+- A skip-to-content link opens the tab order.
+- Semantic landmarks: one `<h1>` per page, `<nav>`, `<main>`, `<footer>`.
+
+## Responsive
+
+Mobile-first. One breakpoint at 768px. At phone width: single column, 16px side
+gutters, no horizontal scroll, mascot shrinks or hides, nav collapses to a
+simple menu. The site is checked at 375px before it is called done.
+
+## Testing
+
+- Build check: `next build` completes with no type errors.
+- Content check: every MDX file parses, and every project renders at its route.
+- Link check: no internal link 404s; external repo links resolve.
+- Manual pass at 375px and 1440px, with reduced motion both on and off.
+- Lighthouse: performance and accessibility both 90+.
+
+## Open Decisions
+
+Deferred deliberately, none blocking:
+
+- Custom domain. The site builds and deploys identically with or without one.
+  A domain can be pointed at the Vercel deployment at any time with no code change.
+- Whether BruinChat later graduates from an experience entry to a project page.
