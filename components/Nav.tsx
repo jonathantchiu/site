@@ -21,7 +21,7 @@ export function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="border-b-2 border-ink bg-cream">
+    <nav className="border-b border-hairline bg-page">
       <ul className="mx-auto flex max-w-3xl gap-2 px-4 py-2">
         {LINKS.map((link) => {
           const active = isActive(pathname, link.href);
@@ -30,8 +30,8 @@ export function Nav() {
               <Link
                 href={link.href}
                 aria-current={active ? 'page' : undefined}
-                className={`flex min-h-[44px] items-center px-3 text-lg underline-offset-4 hover:text-orange-text hover:underline ${
-                  active ? 'text-orange-text underline decoration-2' : ''
+                className={`flex min-h-[44px] items-center px-3 text-lg underline-offset-4 hover:text-accent-text hover:underline ${
+                  active ? 'text-accent-text underline decoration-2' : ''
                 }`}
               >
                 {link.label}

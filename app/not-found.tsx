@@ -9,7 +9,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="mt-2 inline-flex min-h-[44px] items-center rounded-card border-2 border-ink bg-sand px-5 shadow-offset"
+        className="mt-2 inline-flex min-h-[44px] items-center rounded-card border border-hairline bg-card px-5 shadow-soft"
       >
         Back to the home page
       </Link>

@@ -5,22 +5,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        cream: 'var(--cream)',
-        sand: 'var(--sand)',
+        page: 'var(--page)',
+        card: 'var(--card)',
+        hairline: 'var(--hairline)',
         ink: 'var(--ink)',
-        orange: 'var(--orange)',
-        'orange-text': 'var(--orange-text)',
         muted: 'var(--muted)',
+        'accent-text': 'var(--accent-text)',
+        accent: 'var(--accent)',
       },
       maxWidth: {
         measure: '68ch',
       },
       boxShadow: {
-        offset: '4px 4px 0 var(--ink)',
-        'offset-lg': '6px 6px 0 var(--ink)',
+        soft: '0 1px 3px rgb(0 0 0 / 0.06)',
+        'soft-lg': '0 4px 12px rgb(0 0 0 / 0.08)',
       },
       borderRadius: {
-        card: '16px',
+        card: '10px',
       },
     },
   },

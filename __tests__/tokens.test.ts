@@ -14,27 +14,73 @@ function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-function token(name: string): string {
-  const css = readFileSync('app/globals.css', 'utf8');
-  const match = css.match(new RegExp(`--${name}:\\s*(#[0-9A-Fa-f]{6})`));
-  if (!match) throw new Error(`token --${name} not found in app/globals.css`);
+const REMOVED_TOKENS = ['cream', 'sand', 'orange', 'orange-text'];
+
+// v1's regex (`--${name}:\s*...`) matched only the FIRST occurrence in the
+// file, which meant it always read the :root block and silently ignored the
+// prefers-color-scheme: dark block — dark mode was never actually tested.
+// Splitting the file into the two :root blocks up front and indexing tokens
+// within each one closes that hole.
+function splitRootBlocks(css: string): { light: string; dark: string } {
+  const blocks = [...css.matchAll(/:root\s*{([^}]*)}/g)].map((m) => m[1]);
+  if (blocks.length < 2) {
+    throw new Error('expected two :root blocks (light and dark) in app/globals.css');
+  }
+  return { light: blocks[0], dark: blocks[1] };
+}
+
+function tokenFrom(block: string, name: string): string {
+  const match = block.match(new RegExp(`--${name}:\\s*(#[0-9A-Fa-f]{6})`));
+  if (!match) throw new Error(`token --${name} not found in this :root block`);
   return match[1];
 }
 
-describe('palette', () => {
-  it('body ink on cream passes AA for normal text', () => {
-    expect(contrast(token('ink'), token('cream'))).toBeGreaterThanOrEqual(4.5);
+const css = readFileSync('app/globals.css', 'utf8');
+const { light, dark } = splitRootBlocks(css);
+
+describe('palette (light)', () => {
+  it('ink on page passes AA for normal text', () => {
+    expect(contrast(tokenFrom(light, 'ink'), tokenFrom(light, 'page'))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('accent text on cream passes AA for normal text', () => {
-    expect(contrast(token('orange-text'), token('cream'))).toBeGreaterThanOrEqual(4.5);
+  it('accent-text on page passes AA for normal text', () => {
+    expect(contrast(tokenFrom(light, 'accent-text'), tokenFrom(light, 'page'))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('muted text on sand passes AA for normal text', () => {
-    expect(contrast(token('muted'), token('sand'))).toBeGreaterThanOrEqual(4.5);
+  it('muted on card passes AA for normal text', () => {
+    expect(contrast(tokenFrom(light, 'muted'), tokenFrom(light, 'card'))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('decorative orange is documented as failing, so it is never used for text', () => {
-    expect(contrast(token('orange'), token('cream'))).toBeLessThan(4.5);
+  it('decorative accent is documented as failing, so it is never used for text', () => {
+    expect(contrast(tokenFrom(light, 'accent'), tokenFrom(light, 'page'))).toBeLessThan(4.5);
+  });
+});
+
+describe('palette (dark)', () => {
+  it('ink on page passes AA for normal text', () => {
+    expect(contrast(tokenFrom(dark, 'ink'), tokenFrom(dark, 'page'))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('accent-text on page passes AA for normal text', () => {
+    expect(contrast(tokenFrom(dark, 'accent-text'), tokenFrom(dark, 'page'))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('muted on card passes AA for normal text', () => {
+    expect(contrast(tokenFrom(dark, 'muted'), tokenFrom(dark, 'card'))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('accent-text carries every accent string; there is no separate decorative accent in dark mode', () => {
+    // The dark palette in the spec only defines --accent-text (no --accent),
+    // so this block documents that --accent stays undefined for dark mode
+    // rather than silently reusing the light value.
+    expect(dark).not.toMatch(/--accent:/);
+  });
+});
+
+describe('no orphaned v1 tokens', () => {
+  it('app/globals.css does not declare any removed token', () => {
+    for (const name of REMOVED_TOKENS) {
+      expect(css).not.toMatch(new RegExp(`--${name}:`));
+    }
   });
 });

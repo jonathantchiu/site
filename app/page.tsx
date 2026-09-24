@@ -16,7 +16,7 @@ export default function Home() {
           alt="Jonathan Chiu"
           width={128}
           height={128}
-          className="h-32 w-32 rounded-full border-2 border-ink object-cover"
+          className="h-32 w-32 rounded-full border border-hairline object-cover"
         />
         <div>
           <h1 className="font-[family-name:var(--font-display)] text-4xl sm:text-5xl">
@@ -46,7 +46,7 @@ export default function Home() {
         </div>
         <Link
           href="/projects"
-          className="mt-6 inline-flex min-h-[44px] items-center text-orange-text underline decoration-2 underline-offset-4"
+          className="mt-6 inline-flex min-h-[44px] items-center text-accent-text underline decoration-2 underline-offset-4"
         >
           All projects
         </Link>
@@ -63,7 +63,7 @@ export default function Home() {
             <li key={label}>
               <a
                 href={href}
-                className="flex min-h-[44px] min-w-[44px] items-center justify-center text-orange-text underline decoration-2 underline-offset-4"
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center text-accent-text underline decoration-2 underline-offset-4"
               >
                 {label}
               </a>

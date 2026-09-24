@@ -19,7 +19,7 @@ export default function ExperiencePage() {
 
       <section className="mt-14">
         <h2 className="font-[family-name:var(--font-display)] text-3xl">Education</h2>
-        <div className="mt-4 rounded-card border-2 border-ink p-4 sm:p-6">
+        <div className="mt-4 rounded-card border border-hairline p-4 sm:p-6">
           <p className="text-lg">University of California, Los Angeles</p>
           <p className="text-muted">
             BS Computer Science, Henry Samueli School of Engineering · Expected June 2028

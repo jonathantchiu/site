@@ -27,7 +27,7 @@ export function Screenshot({
       height={Number(height)}
       loading="lazy"
       decoding="async"
-      className={`h-auto w-full max-h-[70vh] object-contain rounded-card border-2 border-ink ${className}`}
+      className={`h-auto w-full max-h-[70vh] object-contain rounded-card border border-hairline ${className}`}
     />
   );
 }

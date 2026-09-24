@@ -34,7 +34,7 @@ export default async function ProjectPage({
 
       <ul className="mt-4 flex flex-wrap gap-2">
         {project.stack.map((tech) => (
-          <li key={tech} className="rounded-full border-2 border-ink px-3 py-1 text-[17px]">
+          <li key={tech} className="rounded-full border border-hairline px-3 py-1 text-[17px]">
             {tech}
           </li>
         ))}
@@ -55,7 +55,7 @@ export default async function ProjectPage({
 
       <a
         href={project.repo}
-        className="mt-10 inline-flex min-h-[44px] items-center rounded-card border-2 border-ink bg-sand px-5 shadow-offset"
+        className="mt-10 inline-flex min-h-[44px] items-center rounded-card border border-hairline bg-card px-5 shadow-soft"
       >
         View the code on GitHub
       </a>

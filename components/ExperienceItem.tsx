@@ -3,7 +3,7 @@ import { assetPath } from '@/lib/assetPath';
 
 export function ExperienceItem({ role }: { role: Role }) {
   return (
-    <article className="rounded-card border-2 border-ink bg-sand p-4 shadow-offset sm:p-6">
+    <article className="rounded-card border border-hairline bg-card p-4 shadow-soft sm:p-6">
       <div className="flex items-center gap-3">
         <img
           src={assetPath(role.logo)}
