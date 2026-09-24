@@ -51,5 +51,9 @@ code {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+    /* The spec requires transforms disabled entirely under reduced motion,
+       not just slowed — otherwise hover lifts (ProjectCard's
+       hover:-translate-y-0.5) and the mascot cosmetic drop still move. */
+    transform: none !important;
   }
 }

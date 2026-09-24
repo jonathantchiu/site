@@ -50,7 +50,7 @@ export default async function ProjectPage({
       </div>
 
       <div className="prose-custom mt-10 max-w-measure [&_h2]:mt-10 [&_h2]:text-2xl [&_h2]:font-bold [&_p]:mt-4">
-        <MDXRemote source={project.content} />
+        <MDXRemote source={project.content} components={{ Screenshot }} />
       </div>
 
       <a

@@ -71,8 +71,19 @@ featured: true
 (the largest generated width, see below) and set explicit `width`/`height` on
 the rendered `<img>` so the layout does not shift while it loads.
 
-Then add screenshots at `public/projects/<slug>/<name>-{480,768,1200}.webp`.
-`scripts/prepare-assets.mjs` handles the conversion.
+Then drop source screenshots (PNG or JPG, one file per screen, full-size —
+do not resize by hand) at `assets/screenshots-src/<slug>/<name>.png` and run:
+
+```bash
+node scripts/prepare-assets.mjs
+```
+
+This resizes each source image to 480/768/1200px wide and writes the WebP
+files the `Screenshot` component expects at
+`public/projects/<slug>/<name>-{480,768,1200}.webp`. The same script also
+(re)downloads the mascot sprites and cosmetics from Bento's public repo; both
+jobs run every time, and each is skipped harmlessly if its source is missing
+(no `assets/screenshots-src/` directory means the screenshot step is a no-op).
 
 Nothing else needs to change: the index, detail route, and home page all read
 from `lib/projects.ts`.

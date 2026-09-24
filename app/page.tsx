@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { getFeaturedProjects } from '@/lib/projects';
 import { ProjectCard } from '@/components/ProjectCard';
 import { Reveal } from '@/components/Reveal';
-import { Mascot } from '@/components/Mascot';
+import { MascotScene } from '@/components/MascotScene';
 import { assetPath } from '@/lib/assetPath';
 
 export default function Home() {
@@ -10,10 +10,7 @@ export default function Home() {
 
   return (
     <>
-      <section className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-        <div className="shrink-0 sm:hidden">
-          <Mascot mood="happy" cosmetic="sunglasses" size={92} />
-        </div>
+      <section id="hero" className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
         <img
           src={assetPath('/profile.webp')}
           alt="Jonathan Chiu"
@@ -35,9 +32,7 @@ export default function Home() {
             <span className="text-ink">UCLA DevX</span>.
           </p>
         </div>
-        <div className="hidden shrink-0 sm:block">
-          <Mascot mood="happy" cosmetic="sunglasses" size={120} />
-        </div>
+        <MascotScene />
       </section>
 
       <section className="mt-14">
