@@ -39,6 +39,12 @@ h1, h2, h3 {
   text-wrap: balance;
 }
 
+/* Inline code (API routes, flags) can contain long slash-delimited strings
+   with no natural break point, which overflows narrow viewports. */
+code {
+  overflow-wrap: anywhere;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

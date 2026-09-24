@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="content" className="mx-auto max-w-3xl px-4 py-10">
           {children}
         </main>
-        <footer className="mx-auto max-w-3xl border-t-2 border-ink px-4 py-8 text-sm text-muted">
+        <footer className="mx-auto max-w-3xl border-t-2 border-ink px-4 py-8 text-[17px] text-muted">
           Built by Jonathan Chiu.
         </footer>
       </body>

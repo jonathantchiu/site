@@ -34,7 +34,7 @@ export default async function ProjectPage({
 
       <ul className="mt-4 flex flex-wrap gap-2">
         {project.stack.map((tech) => (
-          <li key={tech} className="rounded-full border-2 border-ink px-3 py-1 text-sm">
+          <li key={tech} className="rounded-full border-2 border-ink px-3 py-1 text-[17px]">
             {tech}
           </li>
         ))}

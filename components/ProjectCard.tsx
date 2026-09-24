@@ -21,14 +21,14 @@ export function ProjectCard({ project }: { project: Project }) {
             {project.title}
           </Link>
         </h3>
-        <p className="text-sm text-muted">{project.year}</p>
+        <p className="text-[17px] text-muted">{project.year}</p>
         <p className="mt-2 max-w-measure">{project.hook}</p>
 
         <ul className="mt-3 flex flex-wrap gap-2">
           {project.stack.map((tech) => (
             <li
               key={tech}
-              className="rounded-full border-2 border-ink px-3 py-1 text-sm"
+              className="rounded-full border-2 border-ink px-3 py-1 text-[17px]"
             >
               {tech}
             </li>
