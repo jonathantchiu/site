@@ -1,0 +1,55 @@
+---
+title: Cognify
+year: '2026'
+hook: Turns class notes into flashcards, quizzes, and study plans.
+stack: ['React', 'Vite', 'FastAPI', 'PostgreSQL', 'OpenAI API', 'Docker']
+repo: https://github.com/jonathantchiu/Cognify
+cover: /projects/cognify/notes
+featured: true
+---
+
+## The problem
+
+The gap between having notes and being able to study them is annoying busywork.
+Making flashcards from a lecture is mechanical, takes an hour, and is the step
+people skip right before they need it most.
+
+## What I built
+
+Cognify takes notes you have already written and generates flashcards, quizzes,
+and seven-day study plans from them. Notes can be grouped, so material spanning
+several lectures generates as one set. Every generation is stored, the latest
+reloads automatically, and full history stays available.
+
+Flashcards have a flip view with shuffle and keyboard navigation. Quizzes are
+multiple choice with per-question reveal and a final score. Study plans have
+checkable tasks with progress that persists per note or group.
+
+## How it works
+
+A React frontend built with Vite talks to a FastAPI backend over a small REST
+API, with PostgreSQL 16 behind SQLAlchemy for persistence. The whole thing
+comes up with one `docker compose up --build`.
+
+The generation endpoints follow one shape rather than three:
+`POST /api/{notes|groups}/{id}/{kind}` where `kind` is `flashcards`, `quiz`, or
+`study-plan`. Adding a new kind of study material means adding a schema and a
+prompt, not a new route family.
+
+Model output is validated before it is stored. A generation that fails
+validation is retried once and then returns `502` rather than persisting
+malformed data, so a bad response from the model never becomes a broken
+flashcard set a user has to delete by hand.
+
+Tests run against in-memory SQLite with the OpenAI client mocked, so the suite
+needs no API key and no database.
+
+## What broke
+
+Early on, a malformed model response would persist and then crash the study
+view on load — the failure surfaced one screen away from its cause, which made
+it look like a frontend rendering bug.
+
+Validating at the boundary fixed it. The response is parsed and checked against
+a schema before it reaches the database, so invalid data is rejected at the
+point it enters the system rather than discovered at the point it is read.

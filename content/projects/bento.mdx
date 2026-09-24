@@ -1,0 +1,60 @@
+---
+title: Bento
+year: '2026'
+hook: A budgeting app where staying under budget raises a virtual pet.
+stack: ['React Native', 'Expo', 'TypeScript', 'SQLite', 'Supabase', 'Zustand']
+repo: https://github.com/jonathantchiu/bento-money
+cover: /projects/bento/home
+featured: true
+---
+
+## The problem
+
+Budgeting apps ask you to do the boring part first. You log expenses for a
+week, nothing visible happens, and you stop. The data is correct and the habit
+is dead.
+
+I wanted the feedback loop to be short enough that opening the app felt worth
+it on a day when nothing interesting happened financially.
+
+## What I built
+
+Bento pairs a daily spending budget with a pet that reacts to it. Stay under
+budget and the pet earns XP and treats. Go over repeatedly and the pet takes a
+vacation until you recover. The financial habit — log an expense, watch the
+daily allowance — sits inside a loop cheap enough to come back to.
+
+It runs on iOS and Android, fully offline.
+
+## How it works
+
+The local SQLite database is the source of truth, not a cache. Every read and
+write goes through `expo-sqlite` first, so the app is fully usable with no
+network and no account. Supabase is an optional mirror for signed-in users
+rather than a dependency.
+
+State is split deliberately: Zustand holds in-memory UI state, while anything
+that must survive a restart goes to SQLite through a repository layer. Screens
+never touch the database directly — they call services, which call repos. That
+boundary is what made the pet logic testable, since mood derivation is a pure
+function of budget history rather than something tangled into a component.
+
+Pet cosmetics are overlay sprites positioned by an anchor table keyed on pet,
+mood, and item, with coordinates stored as fractions of the sprite's bounding
+box so the same numbers work at any render size.
+
+## What broke
+
+Equipped cosmetics did not render. The shop marked items as owned and equipped,
+the state was correct, and nothing appeared on the pet.
+
+The cause was two sources of truth for item identity. The anchor table keyed
+the cowboy hat as `'cowboy hat'` with a space, while the asset table keyed the
+same item as `cowboy_hat`. Lookups against one table succeeded and the other
+returned `undefined`, so the sprite resolved to a real image with no position
+and rendered at zero size. It looked like a missing asset and was actually a
+missing key.
+
+The fix was to make the item id one canonical string and derive both the asset
+path and the anchor from it, so the two tables cannot drift apart again. The
+same class of bug is why this website normalizes those ids on the way in.
