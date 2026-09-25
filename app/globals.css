@@ -29,15 +29,35 @@ html {
 
 /* Section color bands (v3.1 spec: section color bands). Each home-page
    Scene carries data-band="light|warm|dark" (components/Scene.tsx). "light"
-   needs no overrides — it matches the :root defaults exactly — so only
-   "warm" and "dark" redefine tokens here. Every component downstream reads
-   --ink/--muted/--accent-text/--card/--hairline rather than a hardcoded
-   color, so it inherits the right values on any band without knowing bands
-   exist. Values are the exact, pre-contrast-checked pairs from the spec;
-   do not substitute.
+   needs no token overrides — it matches the :root defaults exactly — so
+   only "warm" and "dark" redefine --ink/--muted/--accent-text/--card/
+   --hairline. Values are the exact, pre-contrast-checked pairs from the
+   spec; do not substitute.
+
+   CRITICAL: redefining a custom property inside this scope only changes
+   what var(--ink) RESOLVES TO for elements inside the scope — it does
+   nothing for the plain `color` property itself. `body { color: var(--ink)
+   }` computes to one fixed value (the root #22201D) once, and by normal
+   CSS inheritance every descendant with no color declaration of its own
+   inherits that already-computed value, not the variable — the variable is
+   long gone by then. An element inside [data-band="dark"] with no explicit
+   text-ink/text-muted/text-accent-text class (e.g. a <p> with no color
+   utility at all) therefore stays body's #22201D even though it is sitting
+   on a #22201D background: invisible at 1:1 contrast. This bit
+   components/EntryRow.tsx's subtitle <p>, which has no color class.
+   The fix is to give the band scope itself an explicit `color` declaration,
+   so inheritance restarts from a value that IS re-evaluated per band —
+   var(--ink) resolved with this rule's own cascaded --ink, not body's frozen
+   one. Every text element inside a scene that has no explicit color class
+   of its own now correctly falls back to its band's ink color instead of
+   the root's.
    [data-band] matches the <section> itself (not :root), so this wins over
    the prefers-color-scheme: dark block below regardless of OS theme — see
    the comment on that block. */
+[data-band] {
+  color: var(--ink);
+}
+
 [data-band='light'] {
   background: #FDFCFA;
 }

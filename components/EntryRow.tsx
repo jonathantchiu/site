@@ -31,7 +31,11 @@ export function EntryRow({ href, logo, title, subtitle, date, blurb, external }:
           <span className="entry-title block truncate text-ink group-hover:text-accent-text">
             {title}
           </span>
-          <p className="mt-1 text-lg">{subtitle}</p>
+          {/* Explicit text-ink, not left to inherit: a color-scoped
+              ancestor (app/globals.css's `[data-band] { color: var(--ink) }`)
+              covers elements with no color class, but this one names its
+              token directly so it can never regress into that trap again. */}
+          <p className="mt-1 text-lg text-ink">{subtitle}</p>
           {blurb ? <p className="mt-1 max-w-measure text-[17px] text-muted">{blurb}</p> : null}
         </div>
       </div>

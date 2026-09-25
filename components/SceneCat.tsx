@@ -5,10 +5,12 @@ import { Mascot } from './Mascot';
 import type { CosmeticId, Mood } from '@/lib/cosmetics';
 
 // v3.1 spec: replaces the wormhole/single-traveling-cat mechanic entirely.
-// Each scene shows its own cat, in a mood + optional cosmetic + gutter
-// position. Leaving the scene and scrolling back in advances to the next
-// variant in a fixed rotation (never re-randomized on every intersection
-// callback, which would flicker while scrolling past).
+// Each scene shows its own cat, in a mood + optional cosmetic + position,
+// at every width (see the layout comment further down — in-flow below
+// `xl`, absolutely positioned in the gutter at `xl` and up). Leaving the
+// scene and scrolling back in advances to the next variant in a fixed
+// rotation (never re-randomized on every intersection callback, which
+// would flicker while scrolling past).
 //
 // Client-only and absent from the static export: nothing renders until the
 // post-mount effect below flips `mounted`, same pattern as BoxReveal's
@@ -38,17 +40,38 @@ const VARIANT_POOL: Variant[] = [
   { mood: 'sad', cosmetic: 'sunglasses', position: 'upper' },
 ];
 
-// Every spot sits in the empty horizontal gutter outside the Scene's own
-// max-w-5xl content column (components/Scene.tsx), never inside it, so the
-// cat can never land on body text or a link at any width where it is shown
-// at all. It is hidden below the `xl` breakpoint (see the wrapper className
-// below) where that gutter does not exist — omitted, per the constraint,
-// rather than risking an overlap.
-const POSITION_CLASS: Record<Position, string> = {
-  left: 'left-3 top-1/2 -translate-y-1/2',
-  right: 'right-3 top-1/2 -translate-y-1/2',
-  upper: 'left-3 top-10',
-  lower: 'right-3 bottom-10',
+// Two layout strategies, chosen per breakpoint entirely in CSS (one
+// element, Tailwind responsive variants — no separate render branch):
+//
+// Below `xl` (most laptops and every phone), the cat is a normal in-flow
+// child of Scene's content column (components/Scene.tsx makes that column
+// `flex flex-col` for exactly this). An in-flow element cannot overlap its
+// siblings by definition — it pushes layout instead — so this is the
+// overlap guarantee at every width that isn't wide enough for a side
+// gutter. `order-first`/`order-last` place it above or below the content
+// block; `self-start`/`self-end`/`self-center` place it left, right, or
+// centered within that column.
+//
+// At `xl` and up, Scene's content column tops out at max-w-5xl and the
+// section itself has grown wide enough to have empty horizontal margin
+// outside that column — the cat switches to `xl:absolute` and sits in that
+// margin instead (left-3/right-3 sit inside the section's own edge, well
+// outside the max-w-5xl column: checked by hand against Scene's own
+// padding/max-width — at exactly 1280px there is ~40px of clearance
+// between the cat's edge and the content column's edge, growing at wider
+// viewports).
+const FLOW_POSITION_CLASS: Record<Position, string> = {
+  left: 'self-start order-last',
+  right: 'self-end order-last',
+  upper: 'self-center order-first',
+  lower: 'self-center order-last',
+};
+
+const GUTTER_POSITION_CLASS: Record<Position, string> = {
+  left: 'xl:left-3 xl:top-1/2 xl:-translate-y-1/2',
+  right: 'xl:right-3 xl:top-1/2 xl:-translate-y-1/2',
+  upper: 'xl:left-3 xl:top-10',
+  lower: 'xl:right-3 xl:bottom-10',
 };
 
 const SIZE = 76;
@@ -144,7 +167,7 @@ export function SceneCat({
       // re-entry restarts the pop-in for the newly-picked variant.
       key={motionEnabled ? popKey : 'static'}
       aria-hidden="true"
-      className={`pointer-events-none absolute hidden xl:block ${POSITION_CLASS[variant.position]} ${animateClass}`}
+      className={`pointer-events-none my-6 flex xl:absolute xl:m-0 xl:block ${FLOW_POSITION_CLASS[variant.position]} ${GUTTER_POSITION_CLASS[variant.position]} ${animateClass}`}
       style={band === 'dark' ? DARK_BAND_HALO : undefined}
     >
       <Mascot
