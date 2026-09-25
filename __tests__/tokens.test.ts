@@ -129,6 +129,72 @@ describe('section color bands', () => {
     expect(hairline).not.toBe('#F4EBE0');
   });
 
+  it('the light band redefines its own full token set rather than inheriting from :root', () => {
+    // Regression guard for the shipped defect: the light band previously
+    // declared only `background`, so its --ink/--muted/--accent-text/
+    // --card/--hairline fell through to whatever :root resolved to — which
+    // flips to light-on-light under prefers-color-scheme: dark. Every band
+    // must be self-consistent on its own.
+    const light = bandBlock('light');
+    expect(tokenFrom(light, 'ink')).toBe('#22201D');
+    expect(tokenFrom(light, 'muted')).toBe('#57524B');
+    expect(tokenFrom(light, 'accent-text')).toBe('#A34818');
+    expect(tokenFrom(light, 'card')).toBe('#FFFFFF');
+    expect(tokenFrom(light, 'hairline')).toBe('#EDE8E2');
+  });
+
+  describe('dark-scheme band grounds', () => {
+    function darkSchemeBlock(): string {
+      // The dark-scheme band rules are the last @media (prefers-color-scheme:
+      // dark) block in the file; isolate it before matching per-band rules so
+      // this can't accidentally read the :root dark block near the top
+      // instead.
+      const start = css.lastIndexOf('@media (prefers-color-scheme: dark)');
+      if (start === -1) throw new Error('no dark-scheme band @media block found in app/globals.css');
+      return css.slice(start);
+    }
+
+    function darkSchemeBandBlock(bandName: string): string {
+      const block = darkSchemeBlock();
+      const match = block.match(new RegExp(`\\[data-band=['"]${bandName}['"]\\]\\s*{([^}]*)}`));
+      if (!match) throw new Error(`no dark-scheme [data-band="${bandName}"] rule found`);
+      return match[1];
+    }
+
+    it('every band defines all five tokens for the dark scheme, so this cannot regress silently', () => {
+      for (const bandName of ['light', 'warm', 'dark']) {
+        const block = darkSchemeBandBlock(bandName);
+        expect(block, `${bandName} background`).toMatch(/background:\s*#[0-9A-Fa-f]{6}/);
+        for (const token of ['ink', 'muted', 'accent-text', 'card', 'hairline']) {
+          expect(() => tokenFrom(block, token), `${bandName} --${token}`).not.toThrow();
+        }
+      }
+    });
+
+    it('every dark-scheme band ink/muted/accent-text pairing passes WCAG AA against its own background', () => {
+      for (const bandName of ['light', 'warm', 'dark']) {
+        const block = darkSchemeBandBlock(bandName);
+        const bg = block.match(/background:\s*(#[0-9A-Fa-f]{6})/)![1];
+        for (const token of ['ink', 'muted', 'accent-text']) {
+          const value = tokenFrom(block, token);
+          expect(contrast(value, bg), `${bandName} --${token} on ${bg}`).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    });
+
+    it('every dark-scheme band card and hairline are distinct from that band background', () => {
+      for (const bandName of ['light', 'warm', 'dark']) {
+        const block = darkSchemeBandBlock(bandName);
+        const bg = block.match(/background:\s*(#[0-9A-Fa-f]{6})/)![1];
+        const card = tokenFrom(block, 'card');
+        const hairline = tokenFrom(block, 'hairline');
+        expect(card, `${bandName} card vs bg`).not.toBe(bg);
+        expect(hairline, `${bandName} hairline vs bg`).not.toBe(bg);
+        expect(hairline, `${bandName} hairline vs card`).not.toBe(card);
+      }
+    });
+  });
+
   it('every ink/muted/accent-text pairing in every band passes WCAG AA for normal text against that band background', () => {
     const BACKGROUNDS: Record<string, string> = {
       light: '#FDFCFA',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Mascot } from './Mascot';
 import type { CosmeticId, Mood } from '@/lib/cosmetics';
 
@@ -76,24 +76,18 @@ const GUTTER_POSITION_CLASS: Record<Position, string> = {
 
 const SIZE = 76;
 
-// The dark band's #22201D ground swallows the cat's dark ink outline
-// (verified by rendering cat-happy.webp, which is a mostly-opaque sprite
-// with a dark outline and transparent surround, over #22201D directly —
-// the outline nearly disappears into the ground with no separation). A
-// pair of light drop-shadows following the sprite's own alpha silhouette
-// puts a soft halo just outside that outline, which is what restores
-// separation without drawing a hard ring around a rectangular box.
-const DARK_BAND_HALO: CSSProperties = {
-  filter:
-    'drop-shadow(0 0 5px rgba(253, 252, 250, 0.6)) drop-shadow(0 0 12px rgba(253, 252, 250, 0.32))',
-};
-
 export function SceneCat({
   sceneId,
-  band,
   startIndex,
 }: {
   sceneId: string;
+  // Still accepted from callers (app/page.tsx passes it per scene) even
+  // though nothing in this component reads it any more: the halo that
+  // used to key off it has been removed at the owner's request (see
+  // note above VARIANT_POOL's sibling constants — the halo existed only
+  // to separate the cat from the dark band's ground). Kept in the prop
+  // type rather than stripped from every call site for a purely cosmetic
+  // change with no behavioral upside.
   band: 'light' | 'warm' | 'dark';
   startIndex: number;
 }) {
@@ -168,7 +162,6 @@ export function SceneCat({
       key={motionEnabled ? popKey : 'static'}
       aria-hidden="true"
       className={`pointer-events-none my-6 flex xl:absolute xl:m-0 xl:block ${FLOW_POSITION_CLASS[variant.position]} ${GUTTER_POSITION_CLASS[variant.position]} ${animateClass}`}
-      style={band === 'dark' ? DARK_BAND_HALO : undefined}
     >
       <Mascot
         mood={variant.mood}

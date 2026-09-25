@@ -106,7 +106,7 @@ describe('SceneCat', () => {
     cleanupScene();
   });
 
-  it('applies a light halo on the dark band so the sprite separates from the ground', async () => {
+  it('applies no glow/halo filter on the dark band (owner asked it removed)', async () => {
     stubMatchMedia(false);
     const cleanupScene = mountSceneElement('projects');
     const { container } = render(<SceneCat sceneId="projects" band="dark" startIndex={0} />);
@@ -114,11 +114,11 @@ describe('SceneCat', () => {
     await act(async () => {});
 
     const wrapper = container.querySelector('[aria-hidden="true"]') as HTMLElement;
-    expect(wrapper.style.filter).toContain('drop-shadow');
+    expect(wrapper.style.filter).toBe('');
     cleanupScene();
   });
 
-  it('applies no halo on the light or warm bands', async () => {
+  it('applies no glow/halo filter on the light or warm bands', async () => {
     stubMatchMedia(false);
     const cleanupScene = mountSceneElement('hero');
     const { container } = render(<SceneCat sceneId="hero" band="light" startIndex={0} />);
