@@ -66,23 +66,56 @@ describe('static export output', () => {
     }
   });
 
-  // BoxReveal's box and Portal's wormhole are both client-only overlays
-  // driven by post-hydration state (motionEnabled starts false). Static
-  // export has no browser, so the box-reveal and portal-cycle markup must
-  // be entirely absent from the server-rendered HTML — a no-JS reader
-  // should see the section content plainly, with no box on top of it and
-  // no wormhole beside it.
-  it('ships the home page with no box or portal overlay, only plain section content', () => {
+  // BoxReveal's box and SceneCat's per-scene cat are both client-only
+  // overlays driven by post-hydration state (motionEnabled/mounted start
+  // false). Static export has no browser, so their markup must be entirely
+  // absent from the server-rendered HTML — a no-JS reader should see the
+  // section content plainly, with no box on top of it and no cat beside it.
+  it('ships the home page with no box or cat overlay, only plain section content', () => {
     const file = join(OUT_DIR, 'index.html');
     const html = readFileSync(file, 'utf8');
 
+    // The wormhole/portal mechanic is gone entirely (v3.1: the cat,
+    // reworked) — none of its markers should ever reappear.
     expect(html).not.toMatch(/portal-cycle/);
     expect(html).not.toMatch(/cat-portal-pounce/);
+    expect(html).not.toMatch(/cat-wormhole/);
+    expect(html).not.toMatch(/wormhole/i);
     expect(html).not.toMatch(/box-sitting|box-tumble|box-knocked/);
+    // No cat sprite of any kind ships in the static HTML.
+    expect(html).not.toMatch(/mascot\/cat-/);
+    expect(html).not.toMatch(/mascot\/cosmetics\//);
+    expect(html).not.toMatch(/cat-pop-in/);
 
-    // The content the box/portal would otherwise sit on top of is present
-    // and readable in the raw HTML.
+    // The content the box/cat would otherwise sit on top of is present and
+    // readable in the raw HTML.
     expect(html).toContain('Experience');
     expect(html).toContain('Projects');
+  });
+
+  // v3.1 spec: section color bands. Each home scene carries data-band, and
+  // the warm/dark bands redefine --ink/--muted/--accent-text/--card/
+  // --hairline. Confirms the actual emitted HTML/CSS carries those markers,
+  // not just the component source.
+  it('ships the home page with data-band attributes on every scene', () => {
+    const file = join(OUT_DIR, 'index.html');
+    const html = readFileSync(file, 'utf8');
+
+    expect(html).toMatch(/data-band="light"/);
+    expect(html).toMatch(/data-band="warm"/);
+    expect(html).toMatch(/data-band="dark"/);
+  });
+
+  it('every image src emitted in the static export is prefixed with the base path', () => {
+    const file = join(OUT_DIR, 'index.html');
+    const html = readFileSync(file, 'utf8');
+    const srcs = [...html.matchAll(/<img\b[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]);
+    expect(srcs.length).toBeGreaterThan(0);
+    for (const src of srcs) {
+      // Next's own font/asset URLs (/_next/...) are not routed through
+      // assetPath and are excluded; every content <img> src must be.
+      if (src.startsWith('/_next/')) continue;
+      expect(src.startsWith('/site/'), src).toBe(true);
+    }
   });
 });

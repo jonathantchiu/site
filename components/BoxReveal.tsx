@@ -6,11 +6,9 @@ import { CardboardBox } from './CardboardBox';
 // Spec (interactive layer, "Cardboard box reveal"): each section below the
 // hero starts covered by a cardboard box. The box topples on its own about
 // 400ms after the section scrolls into view, or immediately on click. The
-// portal-and-cat that knocks it off is no longer a small effect owned by
-// this file — it is the one hero-sized cat traveling through the page
-// (see TravelingCat.tsx), which parks beside this section around the same
-// time the box goes, so the box mechanic here only ever needs to know how
-// to topple itself.
+// per-scene cat (components/SceneCat.tsx) is a separate, purely decorative
+// element positioned in that scene's own margin — this file only ever
+// needs to know how to topple the box itself.
 //
 // The non-negotiable part: children are never gated behind the reveal.
 // They are rendered once, unconditionally, right here — the box is only
@@ -37,7 +35,7 @@ export function BoxReveal({ children }: { children: ReactNode }) {
   // Starts false so the server render, and the very first client render
   // before hydration's effects run, both show no overlay at all — matching
   // the no-JS reader's HTML exactly and avoiding a hydration mismatch. Only
-  // an effect (below) may flip this, same pattern as MascotScene.
+  // an effect (below) may flip this, same pattern as SceneCat.
   const [motionEnabled, setMotionEnabled] = useState(false);
   const [phase, setPhase] = useState<Phase>('idle');
   const [pounced, setPounced] = useState(false);

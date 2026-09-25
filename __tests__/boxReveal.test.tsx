@@ -157,10 +157,10 @@ describe('BoxReveal', () => {
     vi.useRealTimers();
   });
 
-  // The wormhole cat that knocks the box off is no longer rendered by this
-  // component at all — it is the single traveling cat portaled in from
-  // TravelingCat.tsx (see __tests__ for that file). This file's own job is
-  // just the box: it topples on click and unmounts once the sequence ends.
+  // The per-scene cat (components/SceneCat.tsx) is never rendered by this
+  // component at all — it is a separate, independently-positioned
+  // decoration. This file's own job is just the box: it topples on click
+  // and unmounts once the sequence ends.
   it('knocks the box off on click, mid-sequence, and unmounts it once revealed', async () => {
     vi.useFakeTimers();
     stubMatchMedia(false);

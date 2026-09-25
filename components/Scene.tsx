@@ -12,25 +12,32 @@ import type { ReactNode } from 'react';
 // content is taller than the viewport it must push the section taller
 // instead of getting clipped.
 //
-// `id` is load-bearing, not cosmetic: components/TravelingCat.tsx,
-// components/MascotScene.tsx and lib/useActiveHomeSection.ts all key off
-// the literal ids 'hero' | 'experience' | 'projects' | 'elsewhere' to know
-// which section is on screen. Callers must pass exactly one of those.
+// `id` is load-bearing, not cosmetic: components/SceneCat.tsx keys off the
+// literal id passed here to observe when this scene scrolls in and out of
+// view. Callers must pass a stable, unique id.
+//
+// `band` (v3.1 spec: section color bands) sets data-band on the section,
+// which app/globals.css uses to scope --ink/--muted/--accent-text/--card/
+// --hairline redefinitions and the full-bleed background for that band.
+// Every existing component keeps reading those same tokens, so it inherits
+// the right colors on any band without knowing bands exist at all.
 interface SceneProps {
   id: string;
   number: string;
   heading: string;
+  band: 'light' | 'warm' | 'dark';
   level?: 'h1' | 'h2';
   lede?: ReactNode;
   children?: ReactNode;
 }
 
-export function Scene({ id, number, heading, level = 'h2', lede, children }: SceneProps) {
+export function Scene({ id, number, heading, band, level = 'h2', lede, children }: SceneProps) {
   const Heading = level;
 
   return (
     <section
       id={id}
+      data-band={band}
       className="relative flex min-h-[100svh] flex-col justify-center px-4 py-20 sm:px-8"
     >
       <span

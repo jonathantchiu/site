@@ -8,7 +8,7 @@ import { assetPath } from '@/lib/assetPath';
 // opacity/transform in on the next frame, so hovering the mascot reads as
 // the item dropping onto it rather than popping in. This subtree is only
 // ever mounted by <Mascot> when cosmeticVisible is true, and that starts
-// false in every caller driven by real interaction (see MascotScene), so it
+// false in every caller driven by real interaction (see SceneCat), so it
 // is never present in the static-exported HTML — the entrance state below
 // is a purely client-side, post-hydration effect, never a baked-in style.
 function CosmeticDrop({
@@ -58,7 +58,7 @@ export function Mascot({
   cosmetic?: CosmeticId;
   // Spec motion effect 3: a cosmetic "drops onto" the mascot on hover.
   // Defaults to hidden (not rendered at all — see CosmeticDrop) so a
-  // caller must opt in explicitly; a client wrapper like MascotScene flips
+  // caller must opt in explicitly; a client wrapper like SceneCat flips
   // this true in response to a real hover event.
   cosmeticVisible?: boolean;
   size?: number;

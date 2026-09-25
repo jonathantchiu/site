@@ -4,33 +4,17 @@ import { ROLES } from '@/lib/experience';
 import { EntryRow } from '@/components/EntryRow';
 import { Reveal } from '@/components/Reveal';
 import { BoxReveal } from '@/components/BoxReveal';
-import { MascotScene } from '@/components/MascotScene';
-import { TravelingCat } from '@/components/TravelingCat';
+import { SceneCat } from '@/components/SceneCat';
 import { Scene } from '@/components/Scene';
 import { assetPath } from '@/lib/assetPath';
 
-// Empty, purely structural slot the one traveling cat portals itself into
-// once this section becomes the active one (see TravelingCat.tsx). Always
-// rendered — it carries no visual content of its own (no svg, no image),
-// so it costs nothing in the static export — and sized to the cat's own
-// hero dimensions up front so its arrival never shifts layout. It sits
-// outside BoxReveal's own container, never inside it, so it is never
-// covered by the box overlay and never fights it for z-index.
-function CatAnchor({ id }: { id: string }) {
-  return (
-    <div
-      id={id}
-      aria-hidden="true"
-      className="h-[92px] w-[92px] shrink-0 sm:h-[120px] sm:w-[120px]"
-    />
-  );
-}
-
-// Four full-viewport scenes (spec: v3 editorial layout). Scene owns the
-// number/heading/lede/hairline header block for each; the ids below
-// ('hero' | 'experience' | 'projects' | 'elsewhere') are the same ones
-// lib/useActiveHomeSection.ts, MascotScene.tsx and TravelingCat.tsx already
-// key off, so the cat/box mechanics keep working unchanged.
+// Four full-viewport scenes (spec: v3 editorial layout), each on its own
+// color band (v3.1 spec: section color bands) and each showing its own cat
+// (v3.1 spec: the cat, reworked — components/SceneCat.tsx). Scene owns the
+// number/heading/lede/hairline header block and the data-band attribute
+// that scopes the band's token overrides in app/globals.css; SceneCat is
+// an absolutely-positioned decoration that never sits inside BoxReveal's
+// own container, so it is never covered by the box overlay.
 export default function Home() {
   const featured = getFeaturedProjects();
 
@@ -40,6 +24,7 @@ export default function Home() {
         id="hero"
         number="01"
         level="h1"
+        band="light"
         heading="Jonathan Chiu"
         lede="CS at UCLA. I build apps that make boring habits worth repeating. This summer I was at SoFi, working out how to keep an AI assistant from saying things it should not."
       >
@@ -56,11 +41,11 @@ export default function Home() {
               Currently building BruinChat with <span className="text-ink">UCLA DevX</span>.
             </p>
           </div>
-          <MascotScene />
         </div>
+        <SceneCat sceneId="hero" band="light" startIndex={0} />
       </Scene>
 
-      <Scene id="experience" number="02" heading="Experience">
+      <Scene id="experience" number="02" heading="Experience" band="warm">
         <div className="flex flex-col items-stretch gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
           <div className="min-w-0 flex-1">
             <BoxReveal>
@@ -86,11 +71,11 @@ export default function Home() {
               </Link>
             </BoxReveal>
           </div>
-          <CatAnchor id="experience-cat-anchor" />
         </div>
+        <SceneCat sceneId="experience" band="warm" startIndex={2} />
       </Scene>
 
-      <Scene id="projects" number="03" heading="Projects">
+      <Scene id="projects" number="03" heading="Projects" band="dark">
         <div className="flex flex-col items-stretch gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
           <div className="min-w-0 flex-1">
             <BoxReveal>
@@ -115,11 +100,11 @@ export default function Home() {
               </Link>
             </BoxReveal>
           </div>
-          <CatAnchor id="projects-cat-anchor" />
         </div>
+        <SceneCat sceneId="projects" band="dark" startIndex={5} />
       </Scene>
 
-      <Scene id="elsewhere" number="04" heading="Elsewhere">
+      <Scene id="elsewhere" number="04" heading="Elsewhere" band="light">
         <ul className="flex flex-wrap gap-4">
           {[
             ['GitHub', 'https://github.com/jonathantchiu'],
@@ -136,9 +121,8 @@ export default function Home() {
             </li>
           ))}
         </ul>
+        <SceneCat sceneId="elsewhere" band="light" startIndex={7} />
       </Scene>
-
-      <TravelingCat />
     </>
   );
 }

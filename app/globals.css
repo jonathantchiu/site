@@ -27,6 +27,49 @@ html {
   background: var(--page);
 }
 
+/* Section color bands (v3.1 spec: section color bands). Each home-page
+   Scene carries data-band="light|warm|dark" (components/Scene.tsx). "light"
+   needs no overrides — it matches the :root defaults exactly — so only
+   "warm" and "dark" redefine tokens here. Every component downstream reads
+   --ink/--muted/--accent-text/--card/--hairline rather than a hardcoded
+   color, so it inherits the right values on any band without knowing bands
+   exist. Values are the exact, pre-contrast-checked pairs from the spec;
+   do not substitute.
+   [data-band] matches the <section> itself (not :root), so this wins over
+   the prefers-color-scheme: dark block below regardless of OS theme — see
+   the comment on that block. */
+[data-band='light'] {
+  background: #FDFCFA;
+}
+
+[data-band='warm'] {
+  background: #F4EBE0;
+  --ink: #22201D;
+  --muted: #6E6862;
+  --accent-text: #B04E1B;
+  /* Card stays white: still reads as a distinct raised surface against the
+     warmer #F4EBE0 ground. Hairline is stepped a shade darker than the v1
+     #EDE8E2 value, which nearly disappears against this warmer background;
+     #E4D6C4 stays a quiet rule rather than a harsh line. */
+  --card: #FFFFFF;
+  --hairline: #E4D6C4;
+}
+
+[data-band='dark'] {
+  background: #22201D;
+  --ink: #FDFCFA;
+  --muted: #A8A199;
+  --accent-text: #E8874D;
+  /* Picked for the dark band: --card #2C2924 is one step lighter than the
+     #22201D ground (luminance ~0.0177 vs ~0.0136), enough to read as a
+     raised surface without looking like a separate hue. --hairline #3A362E
+     sits a further step up again, giving a visible-but-quiet rule on top of
+     that card (and against the band background directly), rather than the
+     stark white a straight token flip would produce. */
+  --card: #2C2924;
+  --hairline: #3A362E;
+}
+
 body {
   background: var(--page);
   color: var(--ink);
@@ -76,17 +119,14 @@ code {
   letter-spacing: -0.01em;
 }
 
-/* Cardboard box reveal (components/BoxReveal.tsx, components/CardboardBox.tsx,
-   components/Portal.tsx). `box-sitting` is the resting pose: rotated
-   slightly so the box reads as dropped onto the section rather than placed
-   dead-center. `box-tumble` is the unattended path (nobody clicked, it
-   just topples on its own). `box-knocked` is the click path: a sharper
-   flinch before it goes, timed to sit under the cat's pounce — BoxReveal
-   applies it with an `animation-delay` (BOX_DELAY) so the cat has time to
-   rise out of the portal first. Durations here must match ACTIVE_DURATION /
-   BOX_DELAY in BoxReveal.tsx (550ms box animation starting 300ms into a
-   900ms total sequence) so the overlay unmounts right as everything
-   finishes, not before or after. */
+/* Cardboard box reveal (components/BoxReveal.tsx, components/CardboardBox.tsx).
+   `box-sitting` is the resting pose: rotated slightly so the box reads as
+   dropped onto the section rather than placed dead-center. `box-tumble` is
+   the unattended path (nobody clicked, it just topples on its own).
+   `box-knocked` is the click path: a sharper flinch before it goes.
+   Durations here must match ACTIVE_DURATION / BOX_DELAY in BoxReveal.tsx
+   (550ms box animation starting 300ms into a 900ms total sequence) so the
+   overlay unmounts right as everything finishes, not before or after. */
 .box-sitting {
   transform: rotate(-2deg) scale(1.03);
 }
@@ -125,179 +165,28 @@ code {
   animation: box-tumble-knocked 550ms cubic-bezier(0.3, 0.7, 0.4, 1) forwards;
 }
 
-/* The wormhole (components/Portal.tsx) scales open from a flat ellipse with
-   a bit of wobble, holds open while the cat does its business, then
-   collapses back flat. `transform-origin` stays centered so it reads as
-   opening/closing in place rather than sliding. The overshoot in the
-   cubic-bezier gives it a snap rather than a linear fade. */
-@keyframes portal-cycle {
+/* The per-scene shifting cat (components/SceneCat.tsx). Replaces the old
+   wormhole/portal mechanic entirely: no portal SVG, no single traveling
+   cat. Each scene pops its own cat in with a small scale-and-fade — never
+   a slide — whenever a new variant mounts (on first mount, and again each
+   time the scene is scrolled back into after leaving). */
+@keyframes cat-pop-in {
   0% {
-    transform: scale(1, 0.12);
+    transform: scale(0.6);
     opacity: 0;
   }
-  14% {
-    transform: scale(1.1, 0.85) rotate(-3deg);
-    opacity: 1;
-  }
-  22% {
-    transform: scale(0.95, 1.06) rotate(2deg);
-    opacity: 1;
-  }
-  30% {
-    transform: scale(1, 1) rotate(0deg);
-    opacity: 1;
-  }
-  76% {
-    transform: scale(1, 1) rotate(0deg);
-    opacity: 1;
-  }
-  90% {
-    transform: scale(1.08, 0.5) rotate(2deg);
+  70% {
+    transform: scale(1.06);
     opacity: 1;
   }
   100% {
-    transform: scale(1, 0.1);
-    opacity: 0;
-  }
-}
-
-.portal-cycle {
-  animation: portal-cycle 900ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  transform-origin: center;
-}
-
-/* The cat's trip through the wormhole: rises up out of the portal with a
-   squash-and-stretch overshoot, pounces sideways at the box, lands, then
-   drops back through as the portal closes. Runs alongside `portal-cycle`
-   for the same 900ms. */
-@keyframes cat-portal-pounce {
-  0% {
-    transform: translate(0, 55%) scale(0.35);
-    opacity: 0;
-  }
-  16% {
-    transform: translate(-6%, -18%) scale(1.2, 0.85);
-    opacity: 1;
-  }
-  26% {
-    transform: translate(-8%, 2%) scale(0.9, 1.15);
-    opacity: 1;
-  }
-  50% {
-    transform: translate(-58%, -10%) scale(1.05);
-    opacity: 1;
-  }
-  64% {
-    transform: translate(-64%, 6%) scale(0.92, 1.1);
-    opacity: 1;
-  }
-  82% {
-    transform: translate(-30%, 12%) scale(0.85);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(0, 55%) scale(0.3);
-    opacity: 0;
-  }
-}
-
-.cat-portal-pounce {
-  animation: cat-portal-pounce 900ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* The single hero cat's journey between sections (components/MascotScene.tsx
-   for the hero leg, components/TravelingCat.tsx for experience/projects).
-   Each leg is one wrapper element carrying either .cat-wormhole-exit or
-   .cat-wormhole-enter; its two children are the reused Portal SVG (drawn
-   at the cat's own full size now, not the old small ~60px overlay) and the
-   Mascot's own div. The portal keyframe is shared — only the duration
-   differs — while the cat body gets its own sink/rise keyframe per
-   direction. Durations here must match EXIT_DURATION / ENTER_DURATION in
-   both MascotScene.tsx and TravelingCat.tsx. */
-@keyframes cat-wormhole-portal {
-  0% {
-    transform: scale(1, 0.12);
-    opacity: 0;
-  }
-  25% {
-    transform: scale(1.08, 0.9) rotate(-2deg);
-    opacity: 1;
-  }
-  40% {
-    transform: scale(1, 1) rotate(0deg);
-    opacity: 1;
-  }
-  75% {
-    transform: scale(1, 1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1, 0.12);
-    opacity: 0;
-  }
-}
-
-.cat-wormhole-exit > svg {
-  animation: cat-wormhole-portal 420ms ease forwards;
-  transform-origin: center;
-}
-
-.cat-wormhole-enter > svg {
-  animation: cat-wormhole-portal 480ms ease forwards;
-  transform-origin: center;
-}
-
-/* The cat sinking into the portal it is about to vanish into — it never
-   slides sideways, only down and away in place, so leaving one section
-   never reads as walking toward the next. */
-@keyframes cat-wormhole-sink {
-  0% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  30% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(40%) scale(0.2);
-    opacity: 0;
-  }
-}
-
-.cat-wormhole-exit > div {
-  animation: cat-wormhole-sink 420ms cubic-bezier(0.4, 0, 1, 1) forwards;
-  transform-origin: center bottom;
-}
-
-/* The cat popping back out of a freshly-opened portal, with a little
-   squash-and-stretch overshoot before it settles at rest. */
-@keyframes cat-wormhole-rise {
-  0% {
-    transform: translateY(40%) scale(0.2);
-    opacity: 0;
-  }
-  20% {
-    transform: translateY(40%) scale(0.2);
-    opacity: 0;
-  }
-  55% {
-    transform: translateY(-10%) scale(1.15);
-    opacity: 1;
-  }
-  75% {
-    transform: translateY(4%) scale(0.92);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scale(1);
+    transform: scale(1);
     opacity: 1;
   }
 }
 
-.cat-wormhole-enter > div {
-  animation: cat-wormhole-rise 480ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  transform-origin: center bottom;
+.cat-pop-in {
+  animation: cat-pop-in 320ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

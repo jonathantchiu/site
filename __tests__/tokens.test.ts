@@ -84,3 +84,71 @@ describe('no orphaned v1 tokens', () => {
     }
   });
 });
+
+// v3.1 spec: section color bands. Bands are implemented by scoping token
+// custom properties per band with [data-band="..."] selectors (see
+// components/Scene.tsx and the comment above these rules in
+// app/globals.css), not by conditional classNames at each call site. This
+// asserts those override blocks are actually present with the exact,
+// pre-contrast-checked values from the spec — not merely that some rule
+// named "dark" exists.
+describe('section color bands', () => {
+  function bandBlock(bandName: string): string {
+    const match = css.match(new RegExp(`\\[data-band=['"]${bandName}['"]\\]\\s*{([^}]*)}`));
+    if (!match) throw new Error(`no [data-band="${bandName}"] rule found in app/globals.css`);
+    return match[1];
+  }
+
+  it('defines a full-bleed background for every band', () => {
+    expect(bandBlock('light')).toMatch(/background:\s*#FDFCFA/i);
+    expect(bandBlock('warm')).toMatch(/background:\s*#F4EBE0/i);
+    expect(bandBlock('dark')).toMatch(/background:\s*#22201D/i);
+  });
+
+  it('the dark band redefines ink, muted and accent-text to the spec values', () => {
+    const dark = bandBlock('dark');
+    expect(tokenFrom(dark, 'ink')).toBe('#FDFCFA');
+    expect(tokenFrom(dark, 'muted')).toBe('#A8A199');
+    expect(tokenFrom(dark, 'accent-text')).toBe('#E8874D');
+  });
+
+  it('the dark band redefines card and hairline, both distinct from the band background', () => {
+    const dark = bandBlock('dark');
+    const card = tokenFrom(dark, 'card');
+    const hairline = tokenFrom(dark, 'hairline');
+    expect(card).not.toBe('#22201D');
+    expect(hairline).not.toBe('#22201D');
+    expect(hairline).not.toBe(card);
+  });
+
+  it('the warm band redefines card and hairline, both distinct from the band background', () => {
+    const warm = bandBlock('warm');
+    const card = tokenFrom(warm, 'card');
+    const hairline = tokenFrom(warm, 'hairline');
+    expect(card).not.toBe('#F4EBE0');
+    expect(hairline).not.toBe('#F4EBE0');
+  });
+
+  it('every ink/muted/accent-text pairing in every band passes WCAG AA for normal text against that band background', () => {
+    const BACKGROUNDS: Record<string, string> = {
+      light: '#FDFCFA',
+      warm: '#F4EBE0',
+      dark: '#22201D',
+    };
+    // Light band declares no overrides (matches :root defaults exactly),
+    // so its ink/muted/accent-text come from the light palette block
+    // already validated above.
+    const PAIRS: Record<string, { ink: string; muted: string; accentText: string }> = {
+      light: { ink: tokenFrom(light, 'ink'), muted: tokenFrom(light, 'muted'), accentText: tokenFrom(light, 'accent-text') },
+      warm: { ink: '#22201D', muted: '#6E6862', accentText: '#B04E1B' },
+      dark: { ink: '#FDFCFA', muted: '#A8A199', accentText: '#E8874D' },
+    };
+    for (const band of Object.keys(BACKGROUNDS)) {
+      const bg = BACKGROUNDS[band];
+      const { ink, muted, accentText } = PAIRS[band];
+      expect(contrast(ink, bg), `${band} ink on ${bg}`).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(muted, bg), `${band} muted on ${bg}`).toBeGreaterThanOrEqual(4.5);
+      expect(contrast(accentText, bg), `${band} accent-text on ${bg}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
