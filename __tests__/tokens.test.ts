@@ -108,7 +108,7 @@ describe('section color bands', () => {
   it('the dark band redefines ink, muted and accent-text to the spec values', () => {
     const dark = bandBlock('dark');
     expect(tokenFrom(dark, 'ink')).toBe('#FDFCFA');
-    expect(tokenFrom(dark, 'muted')).toBe('#A8A199');
+    expect(tokenFrom(dark, 'muted')).toBe('#B5AEA5');
     expect(tokenFrom(dark, 'accent-text')).toBe('#E8874D');
   });
 
@@ -140,7 +140,7 @@ describe('section color bands', () => {
     // already validated above.
     const PAIRS: Record<string, { ink: string; muted: string; accentText: string }> = {
       light: { ink: tokenFrom(light, 'ink'), muted: tokenFrom(light, 'muted'), accentText: tokenFrom(light, 'accent-text') },
-      warm: { ink: '#22201D', muted: '#6E6862', accentText: '#B04E1B' },
+      warm: { ink: '#22201D', muted: '#6E6862', accentText: '#A34818' },
       dark: { ink: '#FDFCFA', muted: '#A8A199', accentText: '#E8874D' },
     };
     for (const band of Object.keys(BACKGROUNDS)) {

@@ -7,8 +7,8 @@
   --card: #FFFFFF;
   --hairline: #EDE8E2;
   --ink: #22201D;
-  --muted: #6E6862;
-  --accent-text: #B04E1B;
+  --muted: #57524B;
+  --accent-text: #A34818;
   --accent: #C25A22;
 }
 
@@ -18,7 +18,7 @@
     --card: #1C1A16;
     --hairline: #2E2B25;
     --ink: #F2EFE9;
-    --muted: #A8A199;
+    --muted: #B5AEA5;
     --accent-text: #E8874D;
   }
 }
@@ -65,8 +65,8 @@ html {
 [data-band='warm'] {
   background: #F4EBE0;
   --ink: #22201D;
-  --muted: #6E6862;
-  --accent-text: #B04E1B;
+  --muted: #57524B;
+  --accent-text: #A34818;
   /* Card stays white: still reads as a distinct raised surface against the
      warmer #F4EBE0 ground. Hairline is stepped a shade darker than the v1
      #EDE8E2 value, which nearly disappears against this warmer background;
@@ -78,7 +78,7 @@ html {
 [data-band='dark'] {
   background: #22201D;
   --ink: #FDFCFA;
-  --muted: #A8A199;
+  --muted: #B5AEA5;
   --accent-text: #E8874D;
   /* Picked for the dark band: --card #2C2924 is one step lighter than the
      #22201D ground (luminance ~0.0177 vs ~0.0136), enough to read as a

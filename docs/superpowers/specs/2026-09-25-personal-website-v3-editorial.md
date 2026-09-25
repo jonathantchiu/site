@@ -112,13 +112,29 @@ steps from the existing warm palette, not the reference's colors.
 
 | Band | Scene | Background | ink | muted | accent |
 |---|---|---|---|---|---|
-| light | 01 Intro | `#FDFCFA` | `#22201D` 15.85 | `#6E6862` 5.36 | `#B04E1B` 5.18 |
-| warm | 02 Experience | `#F4EBE0` | `#22201D` 13.78 | `#6E6862` 4.66 | `#B04E1B` 4.51 |
-| dark | 03 Projects | `#22201D` | `#FDFCFA` 15.85 | `#A8A199` 6.36 | `#E8874D` 6.19 |
-| light | 04 Elsewhere | `#FDFCFA` | `#22201D` 15.85 | `#6E6862` 5.36 | `#B04E1B` 5.18 |
+| light | 01 Intro | `#FDFCFA` | `#22201D` 15.85 | `#57524B` 7.55 | `#A34818` 5.86 |
+| warm | 02 Experience | `#F4EBE0` | `#22201D` 13.78 | `#57524B` 6.56 | `#A34818` 5.09 |
+| dark | 03 Projects | `#22201D` | `#FDFCFA` 15.85 | `#B5AEA5` 7.40 | `#E8874D` 6.19 |
+| light | 04 Elsewhere | `#FDFCFA` | `#22201D` 15.85 | `#57524B` 7.55 | `#A34818` 5.86 |
 
 Every pairing above meets WCAG AA for normal text. `#EFE3D4` was rejected as
 the warm band because muted text on it measures 4.35, below AA.
+
+`--muted` was darkened from `#6E6862` to `#57524B` (and from `#A8A199` to
+`#B5AEA5` on the dark band) after the owner reported the intro was hard to
+read. The old values passed AA at 5.36 and 4.66, which is the point: AA is a
+floor, not a target, and grey secondary text at 17px on a near-white ground is
+uncomfortable even when it technically passes. The new values sit at 7.55 and
+6.56 while staying 2.1:1 apart from `--ink`, so the hierarchy still reads.
+
+The hero lede takes `--ink` rather than `--muted`. It is the first thing a
+reader reads and the primary statement on the site, not a caption.
+
+`--accent-text` was darkened from `#B04E1B` to `#A34818` in the same pass. On
+the warm band the old value measured 4.51, a hair over the AA line, which put
+every link in the same uncomfortable category as the secondary text. The new
+value reads 5.86 on the light band and 5.09 on warm, and is still recognisably
+the same burnt orange.
 
 Bands are implemented by scoping the token custom properties per band, not by
 adding conditional classNames at each call site. A scene carries a

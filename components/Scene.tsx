@@ -51,7 +51,7 @@ export function Scene({ id, number, heading, band, level = 'h2', lede, children 
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between sm:gap-10">
           <Heading className="heading-scene max-w-4xl text-ink">{heading}</Heading>
           {lede ? (
-            <p className="max-w-xs text-[1.0625rem] text-muted sm:text-right">{lede}</p>
+            <p className="max-w-xs text-[1.0625rem] text-ink sm:text-right">{lede}</p>
           ) : null}
         </div>
 
