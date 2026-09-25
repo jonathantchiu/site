@@ -12,19 +12,16 @@
   --accent: #C25A22;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --page: #14130F;
-    --card: #1C1A16;
-    --hairline: #2E2B25;
-    --ink: #F2EFE9;
-    --muted: #B5AEA5;
-    --accent-text: #E8874D;
-  }
-}
-
+/* The site does not follow the OS color scheme. The alternating section
+   bands below (light / warm / dark) ARE the color design: a light ground
+   carries dark text, the dark ground carries light text, and that holds on
+   every device. An OS-driven inversion on top of that flattened all four
+   bands into one dark wash and erased the section breaks entirely, which is
+   the opposite of what the bands exist to do. color-scheme is pinned to
+   light so form controls and scrollbars match the page rather than the OS. */
 html {
   background: var(--page);
+  color-scheme: light;
 }
 
 /* Section color bands (v3.1 spec: section color bands). Each home-page
@@ -51,22 +48,19 @@ html {
    one. Every text element inside a scene that has no explicit color class
    of its own now correctly falls back to its band's ink color instead of
    the root's.
-   [data-band] matches the <section> itself (not :root), so this wins over
-   the prefers-color-scheme: dark block below regardless of OS theme — see
-   the comment on that block. */
+   [data-band] matches the <section> itself, so each band's own tokens win
+   for everything inside it. */
 [data-band] {
   color: var(--ink);
 }
 
 [data-band='light'] {
   background: #FDFCFA;
-  /* Previously relied on inheriting --ink/--muted/--accent-text/--card/
-     --hairline from :root. That is exactly the bug that shipped: the
-     prefers-color-scheme: dark block below flips :root's --ink to a LIGHT
-     value (#F2EFE9) for night viewers, while this band's background stayed
-     the light #FDFCFA ground — light text on a light ground, 1.12:1. Every
-     band, including this one, must define its own full token set so it
-     never depends on what :root happens to resolve to. */
+  /* This band declares its own full token set rather than inheriting from
+     :root, even though the values match the root defaults. Relying on
+     inheritance is what produced a light-on-light 1.12:1 heading once
+     before: a band's ground is fixed, so its foregrounds must be fixed with
+     it rather than tracking whatever :root resolves to. */
   --ink: #22201D;
   --muted: #57524B;
   --accent-text: #A34818;
@@ -102,50 +96,7 @@ html {
   --hairline: #3A362E;
 }
 
-/* Dark-scheme band grounds. The rules above give every band a self-
-   consistent LIGHT-mode token set; without this block, a night viewer
-   still gets those light grounds (OS dark mode never touches [data-band]
-   backgrounds otherwise) even though :root's own --page/--ink flip dark
-   just above. This block gives night viewers dark grounds of their own,
-   scoped the same way, so every band stays self-consistent in both
-   schemes. Placed after the [data-band] rules above so it wins the
-   cascade at equal specificity. --ink/--muted/--accent-text are the
-   spec's pre-contrast-checked values (worst case 6.53:1, comfortably
-   above the 4.5:1 AA floor) and are shared across all three dark-scheme
-   bands. --card/--hairline are picked per band: a small step up from that
-   band's own ground so the surface reads as raised without introducing a
-   new hue, and a further step up again for the hairline so it stays a
-   quiet rule rather than a hard line. */
-@media (prefers-color-scheme: dark) {
-  [data-band='light'] {
-    background: #14130F;
-    --ink: #F2EFE9;
-    --muted: #B5AEA5;
-    --accent-text: #E8874D;
-    /* Same ground as :root's own dark --page, so reuse :root's dark
-       --card/--hairline pair for consistency. */
-    --card: #1C1A16;
-    --hairline: #2E2B25;
-  }
 
-  [data-band='warm'] {
-    background: #1F1B15;
-    --ink: #F2EFE9;
-    --muted: #B5AEA5;
-    --accent-text: #E8874D;
-    --card: #2A241C;
-    --hairline: #3C352B;
-  }
-
-  [data-band='dark'] {
-    background: #0A0908;
-    --ink: #F2EFE9;
-    --muted: #B5AEA5;
-    --accent-text: #E8874D;
-    --card: #1B1712;
-    --hairline: #241F17;
-  }
-}
 
 body {
   background: var(--page);
