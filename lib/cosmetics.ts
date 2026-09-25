@@ -6,8 +6,7 @@ export type CosmeticId =
   | 'cowboy-hat'
   | 'chef-hat'
   | 'sunglasses'
-  | 'sport-glasses'
-  | 'bughunter-toy';
+  | 'sport-glasses';
 
 export interface Anchor {
   x: number;
@@ -44,12 +43,6 @@ const ANCHORS: Record<CosmeticId, Record<Mood, Anchor>> = {
     neutral: { x: 0.1188, y: 0.1617, width: 0.4394, height: 0.3776, rotate: -2.5 },
     sad: { x: 0.1467, y: 0.2593, width: 0.4394, height: 0.3776, rotate: 0 },
     sleep: { x: 0.1527, y: 0.2752, width: 0.4394, height: 0.3776, rotate: -18.5 },
-  },
-  'bughunter-toy': {
-    happy: { x: 0.0113, y: 0.6674, width: 0.3597, height: 0.3438, rotate: 0 },
-    neutral: { x: 0.0133, y: 0.6077, width: 0.3597, height: 0.3438, rotate: 0 },
-    sad: { x: 0.0452, y: 0.5958, width: 0.3597, height: 0.3438, rotate: 0 },
-    sleep: { x: 0.6464, y: 0.536, width: 0.3597, height: 0.3438, rotate: 0 },
   },
 };
 

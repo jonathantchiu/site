@@ -4,12 +4,20 @@
 // outline, warm cardboard fill, and hand-drawn (not ruler-straight) flap
 // creases and tape. `preserveAspectRatio="none"` lets it stretch to cover
 // whatever section it sits over, since sections vary in height.
+import type { CSSProperties } from 'react';
+
 const LINE = '#2B1A0C';
 const FACE = '#C89A6A';
 const SIDE = '#B5824F';
 const TAPE = '#E9D9BC';
 
-export function CardboardBox({ className = '' }: { className?: string }) {
+export function CardboardBox({
+  className = '',
+  style,
+}: {
+  className?: string;
+  style?: CSSProperties;
+}) {
   return (
     <svg
       viewBox="0 0 100 100"
@@ -17,6 +25,7 @@ export function CardboardBox({ className = '' }: { className?: string }) {
       aria-hidden="true"
       focusable="false"
       className={`absolute inset-0 h-full w-full ${className}`}
+      style={style}
     >
       {/* box face */}
       <rect

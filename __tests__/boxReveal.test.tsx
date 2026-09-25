@@ -136,4 +136,81 @@ describe('BoxReveal', () => {
 
     vi.useRealTimers();
   });
+
+  it('renders no portal (and no cat) when prefers-reduced-motion is set, even after a click attempt', async () => {
+    vi.useFakeTimers();
+    stubMatchMedia(true);
+    const { container } = render(
+      <BoxReveal>
+        <p>Content</p>
+      </BoxReveal>
+    );
+
+    // No overlay at all under reduced motion, so there is nothing to click,
+    // but drive the clock forward anyway to be sure nothing appears later.
+    await act(async () => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(container.querySelector('svg')).toBeNull();
+    expect(container.querySelector('img')).toBeNull();
+
+    vi.useRealTimers();
+  });
+
+  it('opens a portal and pops the cat out while the box is knocked off, then removes both once revealed', async () => {
+    vi.useFakeTimers();
+    stubMatchMedia(false);
+    const { container } = render(
+      <BoxReveal>
+        <p>Content</p>
+      </BoxReveal>
+    );
+
+    const overlay = container.querySelector('[aria-hidden="true"]') as HTMLElement;
+    await act(async () => {
+      fireEvent.click(overlay);
+    });
+
+    // Mid-sequence: the portal and the cat sprite are both on screen
+    // alongside the toppling box.
+    const svgs = container.querySelectorAll('svg');
+    expect(svgs.length).toBeGreaterThanOrEqual(2); // box + portal
+    expect(container.querySelector('img[alt=""]')).toBeTruthy();
+
+    // Past the full sequence, everything unmounts — same guarantee as the
+    // plain box-reveal test above, now also covering the portal and cat.
+    await act(async () => {
+      vi.advanceTimersByTime(1200);
+    });
+
+    expect(container.querySelector('svg')).toBeNull();
+    expect(container.querySelector('img')).toBeNull();
+    expect(screen.getByText('Content')).toBeTruthy();
+
+    vi.useRealTimers();
+  });
+
+  it('the portal is purely decorative and can never intercept a click meant for content', async () => {
+    vi.useFakeTimers();
+    stubMatchMedia(false);
+    const { container } = render(
+      <BoxReveal>
+        <p>Content</p>
+      </BoxReveal>
+    );
+
+    const overlay = container.querySelector('[aria-hidden="true"]') as HTMLElement;
+    await act(async () => {
+      fireEvent.click(overlay);
+    });
+
+    const portalWrapper = Array.from(container.querySelectorAll('[aria-hidden="true"]')).find(
+      (el) => el.querySelector('img[alt=""]')
+    ) as HTMLElement;
+    expect(portalWrapper).toBeTruthy();
+    expect(portalWrapper.className).toContain('pointer-events-none');
+
+    vi.useRealTimers();
+  });
 });

@@ -46,14 +46,16 @@ code {
   overflow-wrap: anywhere;
 }
 
-/* Cardboard box reveal (components/BoxReveal.tsx, components/CardboardBox.tsx).
-   `box-sitting` is the resting pose: rotated slightly so the box reads as
-   dropped onto the section rather than placed dead-center. `box-tumble` is
-   the unattended path (nobody clicked, it just topples on its own).
-   `box-knocked` is the click path: a sharper flinch before it goes, timed
-   to sit under the cat's pounce. `cat-pounce` swoops the cat sprite in from
-   the side and back out. Durations here must match TUMBLE_DURATION in
-   BoxReveal.tsx (550ms) so the overlay unmounts right as the animation
+/* Cardboard box reveal (components/BoxReveal.tsx, components/CardboardBox.tsx,
+   components/Portal.tsx). `box-sitting` is the resting pose: rotated
+   slightly so the box reads as dropped onto the section rather than placed
+   dead-center. `box-tumble` is the unattended path (nobody clicked, it
+   just topples on its own). `box-knocked` is the click path: a sharper
+   flinch before it goes, timed to sit under the cat's pounce — BoxReveal
+   applies it with an `animation-delay` (BOX_DELAY) so the cat has time to
+   rise out of the portal first. Durations here must match ACTIVE_DURATION /
+   BOX_DELAY in BoxReveal.tsx (550ms box animation starting 300ms into a
+   900ms total sequence) so the overlay unmounts right as everything
    finishes, not before or after. */
 .box-sitting {
   transform: rotate(-2deg) scale(1.03);
@@ -93,59 +95,84 @@ code {
   animation: box-tumble-knocked 550ms cubic-bezier(0.3, 0.7, 0.4, 1) forwards;
 }
 
-@keyframes cat-pounce-in {
+/* The wormhole (components/Portal.tsx) scales open from a flat ellipse with
+   a bit of wobble, holds open while the cat does its business, then
+   collapses back flat. `transform-origin` stays centered so it reads as
+   opening/closing in place rather than sliding. The overshoot in the
+   cubic-bezier gives it a snap rather than a linear fade. */
+@keyframes portal-cycle {
   0% {
-    transform: translate(-120%, 30%) scale(0.7);
+    transform: scale(1, 0.12);
     opacity: 0;
   }
-  35% {
-    transform: translate(-55%, -8%) scale(1.05);
+  14% {
+    transform: scale(1.1, 0.85) rotate(-3deg);
     opacity: 1;
   }
-  65% {
-    transform: translate(-45%, 0%) scale(1);
+  22% {
+    transform: scale(0.95, 1.06) rotate(2deg);
+    opacity: 1;
+  }
+  30% {
+    transform: scale(1, 1) rotate(0deg);
+    opacity: 1;
+  }
+  76% {
+    transform: scale(1, 1) rotate(0deg);
+    opacity: 1;
+  }
+  90% {
+    transform: scale(1.08, 0.5) rotate(2deg);
     opacity: 1;
   }
   100% {
-    transform: translate(10%, 15%) scale(0.85);
+    transform: scale(1, 0.1);
     opacity: 0;
   }
 }
 
-.cat-pounce {
-  animation: cat-pounce-in 550ms ease-out forwards;
+.portal-cycle {
+  animation: portal-cycle 900ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform-origin: center;
 }
 
-/* Bug hunt (components/BugHunt.tsx). The bug walks along a narrow band
-   near the top or bottom edge of the viewport (chosen at random in
-   BugHunt.tsx) rather than through the centered text column. `left` is
-   animated so it can start just offscreen and exit just offscreen on the
-   other side; direction depends on which one is picked. Duration must
-   match CROSSING_DURATION_MS in BugHunt.tsx (6000ms). */
-@keyframes bug-crossing-forward {
+/* The cat's trip through the wormhole: rises up out of the portal with a
+   squash-and-stretch overshoot, pounces sideways at the box, lands, then
+   drops back through as the portal closes. Runs alongside `portal-cycle`
+   for the same 900ms. */
+@keyframes cat-portal-pounce {
   0% {
-    left: -8%;
+    transform: translate(0, 55%) scale(0.35);
+    opacity: 0;
+  }
+  16% {
+    transform: translate(-6%, -18%) scale(1.2, 0.85);
+    opacity: 1;
+  }
+  26% {
+    transform: translate(-8%, 2%) scale(0.9, 1.15);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-58%, -10%) scale(1.05);
+    opacity: 1;
+  }
+  64% {
+    transform: translate(-64%, 6%) scale(0.92, 1.1);
+    opacity: 1;
+  }
+  82% {
+    transform: translate(-30%, 12%) scale(0.85);
+    opacity: 1;
   }
   100% {
-    left: 104%;
+    transform: translate(0, 55%) scale(0.3);
+    opacity: 0;
   }
 }
 
-@keyframes bug-crossing-backward {
-  0% {
-    left: 104%;
-  }
-  100% {
-    left: -8%;
-  }
-}
-
-.bug-crossing {
-  animation: bug-crossing-forward 6000ms linear forwards;
-}
-
-.bug-crossing-reverse {
-  animation: bug-crossing-backward 6000ms linear forwards;
+.cat-portal-pounce {
+  animation: cat-portal-pounce 900ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

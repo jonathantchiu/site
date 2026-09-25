@@ -65,4 +65,24 @@ describe('static export output', () => {
       }
     }
   });
+
+  // BoxReveal's box and Portal's wormhole are both client-only overlays
+  // driven by post-hydration state (motionEnabled starts false). Static
+  // export has no browser, so the box-reveal and portal-cycle markup must
+  // be entirely absent from the server-rendered HTML — a no-JS reader
+  // should see the section content plainly, with no box on top of it and
+  // no wormhole beside it.
+  it('ships the home page with no box or portal overlay, only plain section content', () => {
+    const file = join(OUT_DIR, 'index.html');
+    const html = readFileSync(file, 'utf8');
+
+    expect(html).not.toMatch(/portal-cycle/);
+    expect(html).not.toMatch(/cat-portal-pounce/);
+    expect(html).not.toMatch(/box-sitting|box-tumble|box-knocked/);
+
+    // The content the box/portal would otherwise sit on top of is present
+    // and readable in the raw HTML.
+    expect(html).toContain('Experience');
+    expect(html).toContain('Projects');
+  });
 });
