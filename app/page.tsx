@@ -30,7 +30,14 @@ export default function Home() {
 
   return (
     <>
-      <section id="hero" className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+      {/* The hero owns most of the first screen so the traveling cat does not
+          hand off to Experience the instant the page loads: the reader scrolls
+          a little first. min-h is viewport-relative rather than a fixed height
+          so short phone screens do not push the content off. */}
+      <section
+        id="hero"
+        className="flex min-h-[70vh] flex-col items-start justify-center gap-6 py-10 sm:min-h-[78vh] sm:flex-row sm:items-center sm:py-16"
+      >
         <img
           src={assetPath('/profile.webp')}
           alt="Jonathan Chiu"
@@ -42,12 +49,12 @@ export default function Home() {
           <h1 className="font-[family-name:var(--font-display)] text-4xl sm:text-5xl">
             Jonathan Chiu
           </h1>
-          <p className="mt-2 max-w-measure text-lg">
+          <p className="mt-3 max-w-measure text-lg">
             CS at UCLA. I build apps that make boring habits worth repeating.
             This summer I was at SoFi, working out how to keep an AI assistant
             from saying things it should not.
           </p>
-          <p className="mt-2 max-w-measure text-muted">
+          <p className="mt-3 max-w-measure text-muted">
             Currently building BruinChat with{' '}
             <span className="text-ink">UCLA DevX</span>.
           </p>
@@ -55,7 +62,7 @@ export default function Home() {
         <MascotScene />
       </section>
 
-      <section id="experience" className="mt-14">
+      <section id="experience" className="mt-20 sm:mt-24">
         <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="min-w-0 flex-1">
             <BoxReveal>
