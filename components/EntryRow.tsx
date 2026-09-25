@@ -12,30 +12,39 @@ export interface EntryRowProps {
 }
 
 const ROW_CLASS =
-  'block min-h-[44px] rounded-card border border-hairline bg-card p-4 shadow-soft transition-shadow duration-200 hover:shadow-soft-lg sm:p-6';
+  'group flex min-h-[44px] items-center gap-4 border-b border-hairline py-5 transition-colors duration-200 hover:text-accent-text sm:py-6';
 
 export function EntryRow({ href, logo, title, subtitle, date, blurb, external }: EntryRowProps) {
   const content = (
     <>
-      <div className="flex flex-col gap-x-3 gap-y-1 sm:flex-row sm:items-baseline sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          {logo ? (
-            <img
-              src={assetPath(logo)}
-              alt=""
-              width={32}
-              height={32}
-              className="h-8 w-8 shrink-0 rounded object-contain"
-            />
-          ) : null}
-          <span className="text-xl font-bold">{title}</span>
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        {logo ? (
+          <img
+            src={assetPath(logo)}
+            alt=""
+            width={32}
+            height={32}
+            className="h-8 w-8 shrink-0 rounded object-contain"
+          />
+        ) : null}
+        <div className="min-w-0">
+          <span className="entry-title block truncate text-ink group-hover:text-accent-text">
+            {title}
+          </span>
+          <p className="mt-1 text-lg">{subtitle}</p>
+          {blurb ? <p className="mt-1 max-w-measure text-[17px] text-muted">{blurb}</p> : null}
         </div>
-        <span className="shrink-0 text-[17px] text-muted sm:text-right">{date}</span>
       </div>
 
-      <p className="mt-1 text-lg">{subtitle}</p>
-
-      {blurb ? <p className="mt-1 max-w-measure text-[17px] text-muted">{blurb}</p> : null}
+      <div className="flex shrink-0 items-center gap-3">
+        <span className="text-[17px] text-muted sm:text-right">{date}</span>
+        <span
+          aria-hidden="true"
+          className="text-muted transition-transform duration-200 group-hover:translate-x-1 group-hover:text-accent-text"
+        >
+          &rarr;
+        </span>
+      </div>
     </>
   );
 

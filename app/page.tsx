@@ -6,6 +6,7 @@ import { Reveal } from '@/components/Reveal';
 import { BoxReveal } from '@/components/BoxReveal';
 import { MascotScene } from '@/components/MascotScene';
 import { TravelingCat } from '@/components/TravelingCat';
+import { Scene } from '@/components/Scene';
 import { assetPath } from '@/lib/assetPath';
 
 // Empty, purely structural slot the one traveling cat portals itself into
@@ -25,49 +26,45 @@ function CatAnchor({ id }: { id: string }) {
   );
 }
 
+// Four full-viewport scenes (spec: v3 editorial layout). Scene owns the
+// number/heading/lede/hairline header block for each; the ids below
+// ('hero' | 'experience' | 'projects' | 'elsewhere') are the same ones
+// lib/useActiveHomeSection.ts, MascotScene.tsx and TravelingCat.tsx already
+// key off, so the cat/box mechanics keep working unchanged.
 export default function Home() {
   const featured = getFeaturedProjects();
 
   return (
     <>
-      {/* The hero owns most of the first screen so the traveling cat does not
-          hand off to Experience the instant the page loads: the reader scrolls
-          a little first. min-h is viewport-relative rather than a fixed height
-          so short phone screens do not push the content off. */}
-      <section
+      <Scene
         id="hero"
-        className="flex min-h-[70vh] flex-col items-start justify-center gap-6 py-10 sm:min-h-[78vh] sm:flex-row sm:items-center sm:py-16"
+        number="01"
+        level="h1"
+        heading="Jonathan Chiu"
+        lede="CS at UCLA. I build apps that make boring habits worth repeating. This summer I was at SoFi, working out how to keep an AI assistant from saying things it should not."
       >
-        <img
-          src={assetPath('/profile.webp')}
-          alt="Jonathan Chiu"
-          width={128}
-          height={128}
-          className="h-32 w-32 rounded-full border border-hairline object-cover"
-        />
-        <div>
-          <h1 className="font-[family-name:var(--font-display)] text-4xl sm:text-5xl">
-            Jonathan Chiu
-          </h1>
-          <p className="mt-3 max-w-measure text-lg">
-            CS at UCLA. I build apps that make boring habits worth repeating.
-            This summer I was at SoFi, working out how to keep an AI assistant
-            from saying things it should not.
-          </p>
-          <p className="mt-3 max-w-measure text-muted">
-            Currently building BruinChat with{' '}
-            <span className="text-ink">UCLA DevX</span>.
-          </p>
+        <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-5">
+            <img
+              src={assetPath('/profile.webp')}
+              alt="Jonathan Chiu"
+              width={96}
+              height={96}
+              className="h-24 w-24 rounded-full border border-hairline object-cover"
+            />
+            <p className="max-w-measure text-muted">
+              Currently building BruinChat with <span className="text-ink">UCLA DevX</span>.
+            </p>
+          </div>
+          <MascotScene />
         </div>
-        <MascotScene />
-      </section>
+      </Scene>
 
-      <section id="experience" className="mt-20 sm:mt-24">
-        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <Scene id="experience" number="02" heading="Experience">
+        <div className="flex flex-col items-stretch gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
           <div className="min-w-0 flex-1">
             <BoxReveal>
-              <h2 className="font-[family-name:var(--font-display)] text-3xl">Experience</h2>
-              <div className="mt-6 flex flex-col gap-4">
+              <div className="flex flex-col">
                 {ROLES.map((role, i) => (
                   <Reveal key={role.id} delay={i * 0.08}>
                     <EntryRow
@@ -91,14 +88,13 @@ export default function Home() {
           </div>
           <CatAnchor id="experience-cat-anchor" />
         </div>
-      </section>
+      </Scene>
 
-      <section id="projects" className="mt-14">
-        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+      <Scene id="projects" number="03" heading="Projects">
+        <div className="flex flex-col items-stretch gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
           <div className="min-w-0 flex-1">
             <BoxReveal>
-              <h2 className="font-[family-name:var(--font-display)] text-3xl">Projects</h2>
-              <div className="mt-6 flex flex-col gap-4">
+              <div className="flex flex-col">
                 {featured.map((project, i) => (
                   <Reveal key={project.slug} delay={i * 0.08}>
                     <EntryRow
@@ -121,11 +117,10 @@ export default function Home() {
           </div>
           <CatAnchor id="projects-cat-anchor" />
         </div>
-      </section>
+      </Scene>
 
-      <section id="elsewhere" className="mt-14">
-        <h2 className="font-[family-name:var(--font-display)] text-3xl">Elsewhere</h2>
-        <ul className="mt-4 flex flex-wrap gap-4">
+      <Scene id="elsewhere" number="04" heading="Elsewhere">
+        <ul className="flex flex-wrap gap-4">
           {[
             ['GitHub', 'https://github.com/jonathantchiu'],
             ['LinkedIn', 'https://linkedin.com/in/jonathantchiu'],
@@ -141,7 +136,7 @@ export default function Home() {
             </li>
           ))}
         </ul>
-      </section>
+      </Scene>
 
       <TravelingCat />
     </>

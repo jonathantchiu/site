@@ -46,6 +46,36 @@ code {
   overflow-wrap: anywhere;
 }
 
+/* v3 editorial type (docs/superpowers/specs/2026-09-25-personal-website-v3-editorial.md).
+   clamp() rather than fixed sizes or breakpoint jumps, because oversized
+   display type is the single most likely thing to overflow a 320px
+   viewport — at 320px both clamps resolve to their minimum. No color here:
+   these only set family/weight/size/tracking/case, never a token. */
+.heading-scene {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  font-size: clamp(2.75rem, 11vw, 6.5rem);
+  line-height: 0.95;
+}
+
+.heading-page {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  font-size: clamp(2.25rem, 7vw, 4rem);
+  line-height: 1;
+}
+
+.entry-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+}
+
 /* Cardboard box reveal (components/BoxReveal.tsx, components/CardboardBox.tsx,
    components/Portal.tsx). `box-sitting` is the resting pose: rotated
    slightly so the box reads as dropped onto the section rather than placed

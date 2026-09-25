@@ -27,12 +27,14 @@ export default async function ProjectPage({
   if (!project) notFound();
 
   return (
-    <article>
-      <h1 className="font-[family-name:var(--font-display)] text-4xl">{project.title}</h1>
-      <p className="mt-1 text-muted">{project.year}</p>
+    <article className="mx-auto max-w-3xl px-4 py-10">
+      <h1 className="heading-page text-ink">{project.title}</h1>
+      <p className="mt-2 text-muted">{project.year}</p>
       <p className="mt-3 max-w-measure text-lg">{project.hook}</p>
 
-      <ul className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-8 border-t border-hairline" />
+
+      <ul className="mt-8 flex flex-wrap gap-2">
         {project.stack.map((tech) => (
           <li key={tech} className="rounded-full border border-hairline px-3 py-1 text-[17px]">
             {tech}
