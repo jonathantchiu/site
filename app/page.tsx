@@ -25,9 +25,9 @@ export default function Home() {
             Jonathan Chiu
           </h1>
           <p className="mt-2 max-w-measure text-lg">
-            CS at UCLA. I build apps that make boring habits worth repeating —
-            and I spent this summer at SoFi making sure an AI assistant does not
-            say things it should not.
+            CS at UCLA. I build apps that make boring habits worth repeating.
+            This summer I was at SoFi, working out how to keep an AI assistant
+            from saying things it should not.
           </p>
           <p className="mt-2 max-w-measure text-muted">
             Currently building BruinChat with{' '}

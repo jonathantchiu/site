@@ -18,11 +18,11 @@ export const ROLES: Role[] = [
     location: 'San Francisco, CA',
     logo: '/logos/sofi.webp',
     blurb:
-      'Built guardrails for Coach, SoFi’s AI financial assistant, turning compliance policy into measurable rules and shadow-testing a safety classifier against live production traffic.',
+      'Worked on guardrails for Coach, SoFi’s AI financial assistant. Turned compliance policy into rules you can measure, then shadow-tested a safety classifier against live production traffic.',
     bullets: [
-      'Built a guardrail evaluation pipeline for Coach, SoFi’s AI financial guidance platform serving 10M+ members, reaching 92% recall and 83% precision across 15 rule classes.',
-      'Turned internal compliance policy into 15 runtime rules and built 1,500+ labeled examples, so each rule class could be measured instead of guessed at.',
-      'Self-hosted a safety classifier on Amazon EKS in observe mode, shadowing production at 150ms p95 across 25K+ candidate responses to produce a coverage matrix for future enforcement.',
+      'Built a guardrail evaluation pipeline for Coach, SoFi’s AI financial guidance platform for 10M+ members. It reaches 92% recall and 83% precision across 15 rule classes.',
+      'Turned internal compliance policy into 15 runtime rules and built a set of 1,500+ labeled examples, so every rule class had a measured score behind it.',
+      'Self-hosted a safety classifier on Amazon EKS in observe mode. It shadowed production at 150ms p95 across 25K+ candidate responses and produced a coverage matrix for future enforcement.',
     ],
   },
   {
@@ -33,10 +33,10 @@ export const ROLES: Role[] = [
     location: 'Los Angeles, CA',
     logo: '/logos/devx.webp',
     blurb:
-      'Building BruinChat, a campus app that turns shared UCLA courses into auto-generated group chats, owning the backend for profiles, enrollment, and chat matching.',
+      'Building BruinChat, a campus app that turns a shared UCLA course into a group chat nobody had to organize. I own the backend for profiles, enrollment, and chat matching.',
     bullets: [
-      'Build BruinChat, a campus app that connects UCLA students through auto-generated group chats for shared courses, on a multi-developer agile team.',
-      'Own the backend services for user profiles, class enrollment, and chat-group matching, plus peer code review and sprint planning.',
+      'Build BruinChat with a multi-developer agile team. It connects UCLA students through group chats generated from the courses they share.',
+      'Own the backend services for user profiles, class enrollment, and chat-group matching, and take part in peer code review and sprint planning.',
     ],
   },
   {
@@ -47,11 +47,11 @@ export const ROLES: Role[] = [
     location: 'Renton, WA',
     logo: '/logos/deca.webp',
     blurb:
-      'Built a Java ETL tool that automated weekly financial reporting and cut both manual work and pipeline runtime on 10K+ record CSV and Excel datasets.',
+      'Built a Java ETL tool that took over the weekly financial reporting and cut both the manual work and the pipeline runtime on 10K+ record CSV and Excel datasets.',
     bullets: [
-      'Delivered a Java ETL tool that parses, cleans, and visualizes financial data from CSV and Excel, cutting 10+ hours of manual work a week.',
-      'Cut pipeline runtime 60% and memory 40% on 10K+ record datasets by replacing linear scans with hash lookups and batching the sort.',
-      'Automated 10+ weekly financial reports with visualized KPIs, removing 80% of the manual reporting time.',
+      'Delivered a Java ETL tool that parses, cleans, and visualizes financial data from CSV and Excel. It saved 10+ hours of manual work a week.',
+      'Replaced linear scans with hash lookups and batched the sort, which cut pipeline runtime 60% and memory 40% on 10K+ record datasets.',
+      'Automated 10+ weekly financial reports with visualized KPIs, which removed 80% of the manual reporting time.',
     ],
   },
 ];

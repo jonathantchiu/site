@@ -11,7 +11,7 @@ export default function ProjectsPage() {
     <>
       <h1 className="font-[family-name:var(--font-display)] text-4xl">Projects</h1>
       <p className="mt-3 max-w-measure text-muted">
-        Things I built, why I built them, and what broke along the way.
+        Every one of these has a writeup, including the parts that broke.
       </p>
 
       <div className="mt-10 flex flex-col gap-4">

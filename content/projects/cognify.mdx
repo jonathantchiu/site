@@ -12,78 +12,78 @@ featured: true
 
 ## The problem
 
-The gap between having notes and being able to study them is annoying busywork.
-Making flashcards from a lecture is mechanical, takes an hour, and is the step
-people skip right before they need it most.
+Making flashcards from a lecture takes about an hour and none of that hour is
+thinking. You already have the notes. You retype them into a different shape.
+It is the step people skip in the week they need it most.
 
 ## What I built
 
-Cognify takes notes you have already written and generates flashcards, quizzes,
-and seven-day study plans from them. Notes can be grouped, so material spanning
-several lectures generates as one set. Every generation is stored, the latest
-reloads automatically, and full history stays available.
+Cognify takes notes you have already written and generates flashcards,
+quizzes, and seven-day study plans from them. Notes can be grouped, so material
+spread over several lectures generates as one set. Every generation is stored.
+The latest one loads when you come back, and the full history stays available.
 
-Flashcards have a flip view with shuffle and keyboard navigation. Quizzes are
-multiple choice with per-question reveal and a final score. Study plans have
-checkable tasks with progress that persists per note or group.
+Flashcards flip, shuffle, and move with the keyboard. Quizzes are multiple
+choice, reveal per question, and end with a score. Study plans are checkable
+tasks, and the progress persists per note or group.
 
 ## How it works
 
 A React frontend built with Vite talks to a FastAPI backend over a small REST
-API, with PostgreSQL 16 behind SQLAlchemy for persistence. The whole thing
-comes up with one `docker compose up --build`.
+API. PostgreSQL 16 sits behind SQLAlchemy. The whole thing comes up with one
+`docker compose up --build`.
 
-The generation endpoints follow one shape rather than three:
-`POST /api/{notes|groups}/{id}/{kind}` where `kind` is `flashcards`, `quiz`, or
-`study-plan`. Adding a new kind of study material means adding a schema and a
-prompt, not a new route family.
+The generation endpoints share one shape:
+`POST /api/{notes|groups}/{id}/{kind}`, where `kind` is `flashcards`, `quiz`,
+or `study-plan`. A new kind of study material needs a schema and a prompt. It
+does not need a new route family.
 
 Model output is validated before it is stored. A generation that fails
-validation is retried once and then returns `502` rather than persisting
-malformed data, so a bad response from the model never becomes a broken
-flashcard set a user has to delete by hand.
+validation is retried once and then returns `502`. Nothing malformed reaches
+the database, so a bad response from the model never becomes a broken flashcard
+set someone has to delete by hand.
 
-Tests run against in-memory SQLite with the OpenAI client mocked, so the suite
+Tests run against in-memory SQLite with the OpenAI client mocked. The suite
 needs no API key and no database.
 
 ## Screenshots
 
 <Screenshot base="/projects/cognify/notes" alt="Cognify notes list with a note selected and generation options for flashcards, quiz, or study plan" width="1200" height="872" />
 
-Every note (or group of notes) offers the same three generation actions in one
-place, which is the `POST /api/{notes|groups}/{id}/{kind}` shape from the API
-made visible in the UI — one mental model instead of three separate flows.
+Every note, and every group of notes, offers the same three generation actions
+in one place. That is the `POST /api/{notes|groups}/{id}/{kind}` shape from the
+API showing up in the UI. One flow covers all three.
 
 <Screenshot base="/projects/cognify/flashcard_practice" alt="Cognify flashcard practice view with a flipped card and shuffle control" width="1200" height="883" />
 
 Flip, shuffle, and keyboard navigation live here. The card flips in place
-rather than swapping to a new element, so the position in the deck stays
-visually anchored while studying.
+instead of swapping to a new element, so your position in the deck stays put
+while you work through it.
 
 <Screenshot base="/projects/cognify/quiz_practice" alt="Cognify quiz practice view with a multiple-choice question and per-question reveal" width="1200" height="885" />
 
-Each question reveals correctness immediately on answer rather than batching
-feedback to the end, so a generated quiz surfaces a gap while the material is
-still fresh instead of only totaling it up in a final score at the finish.
+Each question reveals correctness the moment you answer. A generated quiz finds
+the gap while the material is still in front of you. You do not wait for the
+final score to hear about it.
 
 <Screenshot base="/projects/cognify/plan_practice" alt="Cognify study plan view with a seven-day checklist and per-day progress" width="1200" height="883" />
 
-The generated seven-day plan is a checklist, not a document — progress is
-tracked per task and persists per note or group, so opening the plan on day
-four shows exactly what is still outstanding rather than the whole plan again.
+The generated seven-day plan is a checklist. Progress is tracked per task and
+persists per note or group, so opening it on day four shows you what is still
+outstanding.
 
 <Screenshot base="/projects/cognify/groups" alt="Cognify note groups view showing several lectures combined into one generation source" width="1200" height="876" />
 
-Grouping is what makes a midterm-scale study set possible: several lectures'
-notes combine into one source, and one generation call produces flashcards or
-a plan that spans all of them instead of one lecture at a time.
+Grouping is what makes a midterm-scale study set possible. Several lectures'
+notes combine into one source, and a single generation call produces flashcards
+or a plan that spans all of them.
 
 ## What broke
 
 Early on, a malformed model response would persist and then crash the study
-view on load — the failure surfaced one screen away from its cause, which made
-it look like a frontend rendering bug.
+view on load. The crash surfaced one screen away from its cause, so it read
+like a frontend rendering bug for a while.
 
 Validating at the boundary fixed it. The response is parsed and checked against
-a schema before it reaches the database, so invalid data is rejected at the
-point it enters the system rather than discovered at the point it is read.
+a schema before it reaches the database. Bad data gets rejected where it enters
+the system, and nothing downstream has to defend against it.

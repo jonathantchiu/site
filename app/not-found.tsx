@@ -5,7 +5,8 @@ export default function NotFound() {
     <section className="flex flex-col items-start gap-4">
       <h1 className="font-[family-name:var(--font-display)] text-4xl">Page not found</h1>
       <p className="max-w-measure text-lg">
-        There is nothing at this address. The link may be old, or mistyped.
+        There is nothing at this address. Either the link is old or something
+        got mistyped.
       </p>
       <Link
         href="/"
