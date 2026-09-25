@@ -175,6 +175,101 @@ code {
   animation: cat-portal-pounce 900ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
+/* The single hero cat's journey between sections (components/MascotScene.tsx
+   for the hero leg, components/TravelingCat.tsx for experience/projects).
+   Each leg is one wrapper element carrying either .cat-wormhole-exit or
+   .cat-wormhole-enter; its two children are the reused Portal SVG (drawn
+   at the cat's own full size now, not the old small ~60px overlay) and the
+   Mascot's own div. The portal keyframe is shared — only the duration
+   differs — while the cat body gets its own sink/rise keyframe per
+   direction. Durations here must match EXIT_DURATION / ENTER_DURATION in
+   both MascotScene.tsx and TravelingCat.tsx. */
+@keyframes cat-wormhole-portal {
+  0% {
+    transform: scale(1, 0.12);
+    opacity: 0;
+  }
+  25% {
+    transform: scale(1.08, 0.9) rotate(-2deg);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(1, 1) rotate(0deg);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(1, 1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1, 0.12);
+    opacity: 0;
+  }
+}
+
+.cat-wormhole-exit > svg {
+  animation: cat-wormhole-portal 420ms ease forwards;
+  transform-origin: center;
+}
+
+.cat-wormhole-enter > svg {
+  animation: cat-wormhole-portal 480ms ease forwards;
+  transform-origin: center;
+}
+
+/* The cat sinking into the portal it is about to vanish into — it never
+   slides sideways, only down and away in place, so leaving one section
+   never reads as walking toward the next. */
+@keyframes cat-wormhole-sink {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(40%) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.cat-wormhole-exit > div {
+  animation: cat-wormhole-sink 420ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  transform-origin: center bottom;
+}
+
+/* The cat popping back out of a freshly-opened portal, with a little
+   squash-and-stretch overshoot before it settles at rest. */
+@keyframes cat-wormhole-rise {
+  0% {
+    transform: translateY(40%) scale(0.2);
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(40%) scale(0.2);
+    opacity: 0;
+  }
+  55% {
+    transform: translateY(-10%) scale(1.15);
+    opacity: 1;
+  }
+  75% {
+    transform: translateY(4%) scale(0.92);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.cat-wormhole-enter > div {
+  animation: cat-wormhole-rise 480ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform-origin: center bottom;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

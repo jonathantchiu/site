@@ -137,7 +137,7 @@ describe('BoxReveal', () => {
     vi.useRealTimers();
   });
 
-  it('renders no portal (and no cat) when prefers-reduced-motion is set, even after a click attempt', async () => {
+  it('renders no box overlay when prefers-reduced-motion is set, even after a click attempt', async () => {
     vi.useFakeTimers();
     stubMatchMedia(true);
     const { container } = render(
@@ -153,12 +153,15 @@ describe('BoxReveal', () => {
     });
 
     expect(container.querySelector('svg')).toBeNull();
-    expect(container.querySelector('img')).toBeNull();
 
     vi.useRealTimers();
   });
 
-  it('opens a portal and pops the cat out while the box is knocked off, then removes both once revealed', async () => {
+  // The wormhole cat that knocks the box off is no longer rendered by this
+  // component at all — it is the single traveling cat portaled in from
+  // TravelingCat.tsx (see __tests__ for that file). This file's own job is
+  // just the box: it topples on click and unmounts once the sequence ends.
+  it('knocks the box off on click, mid-sequence, and unmounts it once revealed', async () => {
     vi.useFakeTimers();
     stubMatchMedia(false);
     const { container } = render(
@@ -172,26 +175,26 @@ describe('BoxReveal', () => {
       fireEvent.click(overlay);
     });
 
-    // Mid-sequence: the portal and the cat sprite are both on screen
-    // alongside the toppling box.
-    const svgs = container.querySelectorAll('svg');
-    expect(svgs.length).toBeGreaterThanOrEqual(2); // box + portal
-    expect(container.querySelector('img[alt=""]')).toBeTruthy();
+    // Mid-sequence: the box is on screen, mid-toppling. There is no
+    // portal or cat sprite here any more — never an <img>.
+    const box = container.querySelector('svg');
+    expect(box).toBeTruthy();
+    expect(box?.getAttribute('class')).toContain('box-knocked');
+    expect(container.querySelector('img')).toBeNull();
 
-    // Past the full sequence, everything unmounts — same guarantee as the
-    // plain box-reveal test above, now also covering the portal and cat.
+    // Past the full sequence, the overlay unmounts entirely — same
+    // guarantee as the plain box-reveal test above.
     await act(async () => {
       vi.advanceTimersByTime(1200);
     });
 
     expect(container.querySelector('svg')).toBeNull();
-    expect(container.querySelector('img')).toBeNull();
     expect(screen.getByText('Content')).toBeTruthy();
 
     vi.useRealTimers();
   });
 
-  it('the portal is purely decorative and can never intercept a click meant for content', async () => {
+  it('the box overlay goes pointer-events-none the instant it starts toppling, so it can never intercept a click meant for content', async () => {
     vi.useFakeTimers();
     stubMatchMedia(false);
     const { container } = render(
@@ -205,11 +208,7 @@ describe('BoxReveal', () => {
       fireEvent.click(overlay);
     });
 
-    const portalWrapper = Array.from(container.querySelectorAll('[aria-hidden="true"]')).find(
-      (el) => el.querySelector('img[alt=""]')
-    ) as HTMLElement;
-    expect(portalWrapper).toBeTruthy();
-    expect(portalWrapper.className).toContain('pointer-events-none');
+    expect(overlay.className).toContain('pointer-events-none');
 
     vi.useRealTimers();
   });

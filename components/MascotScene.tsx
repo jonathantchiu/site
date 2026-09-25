@@ -1,27 +1,46 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Mascot } from './Mascot';
+import { Portal } from './Portal';
+import { useActiveHomeSection } from '@/lib/useActiveHomeSection';
 import type { CosmeticId, Mood } from '@/lib/cosmetics';
 
-// Spec motion effect 3: "The hero mascot swaps mood art once when the user
-// scrolls past the hero, and a cosmetic drops onto it on hover." This is the
-// one file that owns that interactivity; Mascot itself stays a plain,
-// server-safe component so it still degrades to a static image with no JS.
+// Owner's brief: "there's the one cat at the top. i want it to wormhole
+// down, same size. stay there when the scroll is on the page." This file
+// owns the hero leg of that single cat's journey: the plain static look a
+// no-JS or reduced-motion reader always sees, plus (once mounted, with
+// motion allowed) vanishing into a portal when the reader scrolls past the
+// hero and popping back out of one when they scroll back up to it. The
+// experience/projects legs live in TravelingCat.tsx, which shares the same
+// useActiveHomeSection() read of the DOM so neither file has to know about
+// the other directly.
+//
 // framer-motion stays confined to Reveal.tsx — this uses plain React state
-// and CSS transitions (declared on Mascot's cosmetic image) instead.
+// and the cat-wormhole-* CSS keyframes in app/globals.css instead.
 
-const HERO_MOOD: Mood = 'happy';
-const SCROLLED_MOOD: Mood = 'neutral';
+const MOOD: Mood = 'happy';
 const HOVER_COSMETIC: CosmeticId = 'sunglasses';
+
+// Keep in sync with the cat-wormhole-exit / cat-wormhole-enter keyframe
+// durations in app/globals.css.
+const EXIT_DURATION = 420;
+const ENTER_DURATION = 480;
+
+type Phase = 'parked' | 'leaving' | 'gone' | 'entering';
 
 export function MascotScene() {
   // Default state (and the only state rendered before hydration, so it is
-  // also what static export bakes into the HTML): happy mood, no cosmetic.
-  // That is the "sensible default" a no-JS reader sees.
-  const [scrolledPast, setScrolledPast] = useState(false);
+  // also what static export bakes into the HTML): the plain cat, parked,
+  // no portal in sight. That is the "sensible default" a no-JS reader
+  // sees, and it is also exactly what a reduced-motion reader keeps
+  // forever, since motionEnabled never flips true for them.
   const [hovered, setHovered] = useState(false);
   const [motionEnabled, setMotionEnabled] = useState(false);
+  const [phase, setPhase] = useState<Phase>('parked');
+  // Tracks whether the *previous* render was at the hero, so the effect
+  // below only reacts to a genuine crossing, not every re-render.
+  const wasHeroRef = useRef(true);
 
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -31,55 +50,74 @@ export function MascotScene() {
     return () => query.removeEventListener('change', sync);
   }, []);
 
+  const activeSection = useActiveHomeSection(motionEnabled);
+  const atHero = activeSection === 'hero';
+
   useEffect(() => {
     if (!motionEnabled) return;
-    // The whole hero section (id="hero" in app/page.tsx), not just the
-    // mascot's own small box, so "scrolls past the hero" matches what it
-    // reads like: the intro block, not a sliver of it.
-    const hero = document.getElementById('hero');
-    if (!hero || typeof IntersectionObserver === 'undefined') return;
+    const wasHero = wasHeroRef.current;
+    wasHeroRef.current = atHero;
+    if (wasHero === atHero) return; // no crossing, nothing to animate
 
-    // Fires once, the first time the hero leaves the viewport on scroll;
-    // the mood then stays swapped rather than flipping back and forth.
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) {
-          setScrolledPast(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0 }
-    );
-    observer.observe(hero);
-    return () => observer.disconnect();
-  }, [motionEnabled]);
+    if (atHero) {
+      // Scrolled back up: pop in through a portal, then settle to the
+      // plain static look (same as the very first paint). This is a
+      // deliberate reaction to activeSection crossing into 'hero', not
+      // state derived from props/state during render, so the synchronous
+      // setState here is the correct tool, not something to hoist out.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPhase('entering');
+      const t = setTimeout(() => setPhase('parked'), ENTER_DURATION);
+      return () => clearTimeout(t);
+    }
 
-  const mood = motionEnabled && scrolledPast ? SCROLLED_MOOD : HERO_MOOD;
-  const cosmeticVisible = motionEnabled && hovered;
+    // Scrolled away: vanish into a portal in place, then stay gone —
+    // TravelingCat picks the cat up from here.
+    setPhase('leaving');
+    const t = setTimeout(() => setPhase('gone'), EXIT_DURATION);
+    return () => clearTimeout(t);
+  }, [atHero, motionEnabled]);
 
-  const hoverHandlers = motionEnabled
-    ? {
-        onMouseEnter: () => setHovered(true),
-        onMouseLeave: () => setHovered(false),
-      }
-    : {};
+  // Once truly away from the hero, render nothing here at all — there is
+  // only ever one cat on screen, and while it is parked at another
+  // section this slot stays empty.
+  if (motionEnabled && phase === 'gone') return null;
+
+  const cosmeticVisible = motionEnabled && hovered && phase === 'parked';
+  const hoverHandlers =
+    motionEnabled && phase === 'parked'
+      ? { onMouseEnter: () => setHovered(true), onMouseLeave: () => setHovered(false) }
+      : {};
+
+  const travelClass =
+    phase === 'leaving' ? 'cat-wormhole-exit' : phase === 'entering' ? 'cat-wormhole-enter' : '';
+  const showPortalArt = motionEnabled && travelClass !== '';
 
   return (
     <>
       {/* order-first: on the stacked mobile layout this must sit above the
           name (spec), even though in the desktop row it is the sm:hidden
           twin of the trailing desktop instance below. */}
-      <div className="order-first shrink-0 sm:hidden" {...hoverHandlers}>
+      <div
+        className={`relative order-first shrink-0 sm:hidden ${travelClass}`}
+        {...hoverHandlers}
+      >
+        {showPortalArt && (
+          <Portal className="pointer-events-none absolute inset-0 h-full w-full" />
+        )}
         <Mascot
-          mood={mood}
+          mood={MOOD}
           cosmetic={HOVER_COSMETIC}
           cosmeticVisible={cosmeticVisible}
           size={92}
         />
       </div>
-      <div className="hidden shrink-0 sm:block" {...hoverHandlers}>
+      <div className={`relative hidden shrink-0 sm:block ${travelClass}`} {...hoverHandlers}>
+        {showPortalArt && (
+          <Portal className="pointer-events-none absolute inset-0 h-full w-full" />
+        )}
         <Mascot
-          mood={mood}
+          mood={MOOD}
           cosmetic={HOVER_COSMETIC}
           cosmeticVisible={cosmeticVisible}
           size={120}
