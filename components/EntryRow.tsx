@@ -12,19 +12,19 @@ export interface EntryRowProps {
 }
 
 const ROW_CLASS =
-  'group flex min-h-[44px] items-center gap-4 border-b border-hairline py-5 transition-colors duration-200 hover:text-accent-text sm:py-6';
+  'group flex min-h-[44px] items-start gap-4 border-b border-hairline py-5 transition-colors duration-200 hover:text-accent-text sm:py-6';
 
 export function EntryRow({ href, logo, title, subtitle, date, blurb, external }: EntryRowProps) {
   const content = (
     <>
-      <div className="flex min-w-0 flex-1 items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
         {logo ? (
           <img
             src={assetPath(logo)}
             alt=""
             width={32}
             height={32}
-            className="h-8 w-8 shrink-0 rounded object-contain"
+            className="mt-0.5 h-8 w-8 shrink-0 rounded object-contain"
           />
         ) : null}
         <div className="min-w-0">
@@ -36,7 +36,7 @@ export function EntryRow({ href, logo, title, subtitle, date, blurb, external }:
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 items-center gap-3 pt-0.5">
         <span className="text-[17px] text-muted sm:text-right">{date}</span>
         <span
           aria-hidden="true"
