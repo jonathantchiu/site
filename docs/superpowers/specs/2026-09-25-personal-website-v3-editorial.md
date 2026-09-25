@@ -97,3 +97,60 @@ content.
   `100svh` and by `min-height` rather than a fixed height.
 - Four full screens making the site feel long. Accepted: the owner chose this
   explicitly over the lighter option.
+
+---
+
+## v3.1 — Section bands and the shifting cat
+
+Added 2026-09-25, after the owner saw v3 live.
+
+### Section color bands
+
+Each scene gets its own background so the breaks between them are obvious,
+the way the reference site changes ground per section. The colors are tonal
+steps from the existing warm palette, not the reference's colors.
+
+| Band | Scene | Background | ink | muted | accent |
+|---|---|---|---|---|---|
+| light | 01 Intro | `#FDFCFA` | `#22201D` 15.85 | `#6E6862` 5.36 | `#B04E1B` 5.18 |
+| warm | 02 Experience | `#F4EBE0` | `#22201D` 13.78 | `#6E6862` 4.66 | `#B04E1B` 4.51 |
+| dark | 03 Projects | `#22201D` | `#FDFCFA` 15.85 | `#A8A199` 6.36 | `#E8874D` 6.19 |
+| light | 04 Elsewhere | `#FDFCFA` | `#22201D` 15.85 | `#6E6862` 5.36 | `#B04E1B` 5.18 |
+
+Every pairing above meets WCAG AA for normal text. `#EFE3D4` was rejected as
+the warm band because muted text on it measures 4.35, below AA.
+
+Bands are implemented by scoping the token custom properties per band, not by
+adding conditional classNames at each call site. A scene carries a
+`data-band` attribute and the stylesheet redefines `--ink`, `--muted`,
+`--accent-text`, `--card` and `--hairline` within it. Every existing component
+then inherits correct colors on a dark ground without knowing bands exist. A
+component that hardcodes a color instead of using a token will break on the
+dark band, and that is the intended signal.
+
+Bands run full-bleed edge to edge, while their content stays within the
+existing measure.
+
+### The cat, reworked
+
+The wormhole goes. The traveling-cat mechanic is replaced by a cat that
+appears in a different form and a different place in each section.
+
+- Each scene shows the cat in one of several variants: a mood
+  (`happy`, `neutral`, `sad`, `sleep`) optionally paired with one of the five
+  cosmetics, positioned at one of several spots around that scene's content
+  (left, right, upper, lower).
+- Scrolling away from a scene and back to it shows a different variant. The
+  variant advances rather than being re-randomized on every frame, so it never
+  flickers while scrolling.
+- The cat is decoration: `aria-hidden`, `pointer-events: none`, and it never
+  overlaps text or covers a link at any width.
+- Cosmetics keep using the percentage anchors in `lib/cosmetics.ts` so they
+  stay aligned at any sprite size.
+- On the dark band the sprite's dark outline loses contrast against the
+  ground, so the cat on that band needs separation, such as a soft light halo
+  behind it. Verify it reads, rather than assuming.
+- Nothing renders under `prefers-reduced-motion` beyond a single static cat,
+  and nothing renders without JavaScript.
+
+The cardboard box reveal stays as it is.
