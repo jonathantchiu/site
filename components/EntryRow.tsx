@@ -12,7 +12,7 @@ export interface EntryRowProps {
 }
 
 const ROW_CLASS =
-  'group flex min-h-[44px] items-start gap-4 border-b border-hairline py-5 transition-colors duration-200 hover:text-accent-text sm:py-6';
+  'group flex min-h-[44px] flex-col items-stretch gap-1 border-b border-hairline py-5 transition-colors duration-200 hover:text-accent-text sm:flex-row sm:items-start sm:gap-4 sm:py-6';
 
 export function EntryRow({ href, logo, title, subtitle, date, blurb, external }: EntryRowProps) {
   const content = (
@@ -40,7 +40,10 @@ export function EntryRow({ href, logo, title, subtitle, date, blurb, external }:
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center gap-3 pt-0.5">
+      {/* Below sm this sits on its own line under the title block; a fixed
+          date column on the same row squeezed the blurb to one word per
+          line at 390px. */}
+      <div className="mt-1 flex shrink-0 items-center gap-3 sm:mt-0 sm:pt-0.5">
         <span className="text-[17px] text-muted sm:text-right">{date}</span>
         <span
           aria-hidden="true"

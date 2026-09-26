@@ -389,10 +389,37 @@ export function SceneCat({
     };
   }, [mounted, sceneId]);
 
-  if (!mounted || !placement) return null;
+  if (!mounted) return null;
 
   const variant = VARIANT_POOL[index % VARIANT_POOL.length];
   const animateClass = motionEnabled ? 'cat-pop-in' : '';
+
+  // Phone fallback. At 390px and below there is no horizontal slack beside a
+  // row: the title column takes the full measure and the date sits on its own
+  // line, so the free-rectangle search correctly finds nowhere to put a cat
+  // and would otherwise render nothing at all on the device most readers use.
+  // Rather than force an absolute position that would cover text, the cat
+  // renders IN FLOW as the last child of the scene, right-aligned, pulled up
+  // so its feet rest on the divider above it. In-flow means it reserves its
+  // own space and cannot overlap anything by construction.
+  if (!placement) {
+    if (typeof window !== 'undefined' && window.innerWidth >= PHONE_BREAKPOINT) return null;
+    return (
+      <div
+        key={motionEnabled ? popKey : 'static'}
+        aria-hidden="true"
+        data-scene-cat=""
+        className={`pointer-events-none -mt-3 flex justify-end ${animateClass}`}
+      >
+        <Mascot
+          mood={variant.mood}
+          cosmetic={variant.cosmetic}
+          cosmeticVisible={Boolean(variant.cosmetic)}
+          size={PHONE_MAX}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
