@@ -214,10 +214,10 @@ describe('SceneCat', () => {
 
     const wrapper = container.querySelector('[aria-hidden="true"]') as HTMLElement;
     expect(wrapper).not.toBeNull();
-    // Desktop ladder's largest size (112) should be used, on the second
-    // (wide-open) divider, not a shrunk size squeezed onto the first.
-    expect(parseFloat(wrapper.style.width)).toBe(112);
-    expect(parseFloat(wrapper.style.top) + 112).toBeCloseTo(300, 0);
+    // Desktop max (120) should be used, on the second (wide-open)
+    // divider, not a shrunk size squeezed onto the first.
+    expect(parseFloat(wrapper.style.width)).toBe(120);
+    expect(parseFloat(wrapper.style.top) + 120).toBeCloseTo(300, 0);
 
     section.remove();
   });
@@ -338,8 +338,8 @@ describe('SceneCat', () => {
     expect(wrapperAfter).not.toBeNull();
     // Still full size — if the old sprite had been treated as an
     // obstacle sitting right on the line, the only way to avoid it would
-    // have been to shrink or shift away, not stay at 112.
-    expect(parseFloat(wrapperAfter.style.width)).toBe(112);
+    // have been to shrink or shift away, not stay at the desktop max.
+    expect(parseFloat(wrapperAfter.style.width)).toBe(120);
 
     section.remove();
   });
@@ -360,10 +360,10 @@ describe('SceneCat', () => {
     expect(wrapper).not.toBeNull();
     const left = parseFloat(wrapper.style.left);
     const size = parseFloat(wrapper.style.width);
-    // Still full size (112, the largest desktop rung that fits in a
-    // 150px-wide gap) — falling back to the left side must not also
-    // force an unnecessary shrink.
-    expect(size).toBe(112);
+    // Still full size (120, the desktop max — the 150px-wide gap easily
+    // fits it) — falling back to the left side must not also force an
+    // unnecessary shrink.
+    expect(size).toBe(120);
     expect(left + size).toBeLessThanOrEqual(150 + 0.01);
     cleanupScene();
   });

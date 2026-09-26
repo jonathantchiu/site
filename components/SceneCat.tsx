@@ -42,34 +42,38 @@ const VARIANT_POOL: Variant[] = [
   { mood: 'sad', cosmetic: 'sunglasses' },
 ];
 
-// Sizes tried, largest first. Position, not size, is the thing that
-// should adapt to the layout: the search below looks across every
-// divider line in the scene (the header rule *and* every EntryRow's
-// bottom border) for a content-free stretch before ever stepping the size
-// down — a full-size cat almost always fits somewhere (the gap between
-// the header rule and the content below it, or the whitespace past a
-// short row), it just might not be under the specific line the search
-// checks first. 64px is a hard floor: below that the cat reads as a
-// speck rather than the site's mascot, so nothing renders rather than
-// shrinking further.
-const CAT_FLOOR = 64;
-const DESKTOP_SIZES = [112, 96, 80, CAT_FLOOR];
-const PHONE_SIZES = [84, 72, CAT_FLOOR];
+// The size is not chosen from a fixed ladder any more — it falls straight
+// out of the geometry of whichever (line, x-interval) pair wins the
+// search below: size = min(interval width, available height above the
+// line at that interval). MAX just keeps a huge empty area (e.g. a
+// section with nothing else on it) from producing a comically large cat;
+// FLOOR is the smallest a cat is allowed to render at before this scene
+// is left without one — phones get a lower floor because their dividers
+// are narrower and their rows read fine with a slightly smaller cat, but
+// a cat that small would look like a speck on a wide desktop line where
+// there was never a need to shrink that far.
+const DESKTOP_MAX = 120;
+const DESKTOP_FLOOR = 64;
+const PHONE_MAX = 88;
+const PHONE_FLOOR = 56;
 const PHONE_BREAKPOINT = 640;
 
-function sizesForViewport(): number[] {
-  return window.innerWidth < PHONE_BREAKPOINT ? PHONE_SIZES : DESKTOP_SIZES;
+function sizeBoundsForViewport(): { max: number; floor: number } {
+  return window.innerWidth < PHONE_BREAKPOINT
+    ? { max: PHONE_MAX, floor: PHONE_FLOOR }
+    : { max: DESKTOP_MAX, floor: DESKTOP_FLOOR };
 }
+
+// Two size-vs-position candidates within a few pixels of each other are
+// treated as equally good, at which point the right-side preference below
+// breaks the tie rather than the (often arbitrary) few extra pixels of
+// size winning outright.
+const SIZE_TIE_TOLERANCE = 8;
 
 interface Placement {
   left: number;
   top: number;
   size: number;
-}
-
-interface Interval {
-  start: number;
-  end: number;
 }
 
 // Marks the cat's own wrapper so the occlusion scan below can exclude its
@@ -110,18 +114,81 @@ function lineY(el: Element, rect: DOMRect): number {
   return el.classList.contains('border-t') ? rect.top : rect.bottom;
 }
 
-function mergeIntervals(intervals: Interval[]): Interval[] {
-  const sorted = [...intervals].sort((a, b) => a.start - b.start);
-  const merged: Interval[] = [];
-  for (const cur of sorted) {
-    const last = merged[merged.length - 1];
-    if (last && cur.start <= last.end) {
-      last.end = Math.max(last.end, cur.end);
-    } else {
-      merged.push({ ...cur });
-    }
+interface Candidate {
+  start: number;
+  end: number;
+  y: number;
+  size: number;
+  rightHalf: boolean;
+}
+
+// For one divider line, finds every (x-interval, available-height) pair by
+// sweeping the obstacles that sit above it, rather than testing a single
+// guessed size against the whole width at once. Between any two obstacle
+// edges the set of obstacles overlapping that slice of x is constant, so
+// the "ceiling" (the bottom edge of the lowest/closest obstacle above the
+// line) is constant there too — that slice's available height is exactly
+// `line.y - ceiling`, and its cat-size potential is
+// `min(sliceWidth, availableHeight)`. A slice a real obstacle actually
+// crosses through (its bottom is at or past the line, not above it) is
+// dropped entirely: there is no available height there at all, not a
+// small one.
+function candidatesForDivider(
+  dRect: DOMRect,
+  y: number,
+  occludingRects: DOMRect[],
+  max: number,
+  floor: number
+): Candidate[] {
+  const relevant = occludingRects
+    .filter((r) => r.top < y && r.right > dRect.left && r.left < dRect.right)
+    .map((r) => ({
+      start: Math.max(r.left, dRect.left),
+      end: Math.min(r.right, dRect.right),
+      bottom: r.bottom,
+    }))
+    .filter((r) => r.end > r.start);
+
+  const breakpoints = new Set<number>([dRect.left, dRect.right]);
+  for (const r of relevant) {
+    breakpoints.add(r.start);
+    breakpoints.add(r.end);
   }
-  return merged;
+  const xs = Array.from(breakpoints).sort((a, b) => a - b);
+
+  const mid = dRect.left + dRect.width / 2;
+  const candidates: Candidate[] = [];
+
+  for (let i = 0; i < xs.length - 1; i++) {
+    const start = xs[i];
+    const end = xs[i + 1];
+    const width = end - start;
+    if (width <= 0) continue;
+    const midpoint = (start + end) / 2;
+
+    const covering = relevant.filter((r) => r.start <= midpoint && r.end >= midpoint);
+    // An obstacle whose bottom edge is at or below the line actually
+    // crosses through this slice's column — no cat can stand there at
+    // any height.
+    if (covering.some((r) => r.bottom >= y)) continue;
+
+    const ceilingBottom = covering.length > 0 ? Math.max(...covering.map((r) => r.bottom)) : null;
+    // A cosmetic (a hat, in particular) can render slightly above the cat
+    // sprite's own box — when a real obstacle defines the ceiling, hold
+    // back a little of the measured height so a brim never lands on it.
+    // An interval with no obstacle above it at all has no such neighbor to
+    // protect against, so it isn't padded — otherwise open whitespace
+    // would arbitrarily cap out below `max` for no reason.
+    const availableHeight =
+      ceilingBottom === null ? max : (y - ceilingBottom) * 0.85;
+
+    const size = Math.min(width, Math.max(0, availableHeight), max);
+    if (size < floor) continue;
+
+    candidates.push({ start, end, y, size, rightHalf: midpoint >= mid });
+  }
+
+  return candidates;
 }
 
 // Reads every rect it needs up front (dividers, then occluding elements) before
@@ -153,92 +220,32 @@ function computePlacement(sceneEl: HTMLElement): Placement | null {
     .map((el) => el.getBoundingClientRect())
     .filter((r) => r.width > 0 && r.height > 0);
 
-  // For a given size, the free (content-clear) intervals across every divider
-  // line in the scene, each tagged with which line it belongs to and
-  // whether it lies in that line's right half.
-  function freeIntervalsAtSize(
-    size: number
-  ): Array<{ start: number; end: number; y: number; rightHalf: boolean }> {
-    // A cosmetic (a hat, in particular) can render slightly above the cat
-    // sprite's own box — pad the content-avoidance strip so a brim never
-    // lands on a glyph even though the wrapper box itself stays exactly
-    // `size` tall.
-    const pad = Math.round(size * 0.15);
-    const results: Array<{ start: number; end: number; y: number; rightHalf: boolean }> = [];
+  const { max, floor } = sizeBoundsForViewport();
 
-    for (const { rect: dRect, y } of dividers) {
-      const stripTop = y - size - pad;
-      const stripBottom = y;
+  const candidates = dividers.flatMap(({ rect, y }) =>
+    candidatesForDivider(rect, y, occludingRects, max, floor)
+  );
+  if (candidates.length === 0) return null;
 
-      const occupied = occludingRects
-        .filter((oRect) => oRect.bottom > stripTop && oRect.top < stripBottom)
-        .map((oRect) => ({
-          start: Math.max(oRect.left, dRect.left),
-          end: Math.min(oRect.right, dRect.right),
-        }))
-        .filter((iv) => iv.end > iv.start);
+  // Maximize size first — the whole point of measuring the real rectangle
+  // instead of guessing a size is that the biggest cat that actually fits
+  // anywhere in the scene wins. Only among candidates within a few pixels
+  // of that best size does the right-side preference get to pick.
+  const bestSize = Math.max(...candidates.map((c) => c.size));
+  const comparable = candidates.filter((c) => c.size >= bestSize - SIZE_TIE_TOLERANCE);
+  const rightComparable = comparable.filter((c) => c.rightHalf);
+  const pool = rightComparable.length > 0 ? rightComparable : comparable;
 
-      const merged = mergeIntervals(occupied);
+  const chosen = pool[Math.floor(Math.random() * pool.length)];
+  const size = chosen.size;
+  const maxLeft = chosen.end - size;
+  const left = chosen.start + Math.random() * Math.max(0, maxLeft - chosen.start);
 
-      const free: Interval[] = [];
-      let cursor = dRect.left;
-      for (const iv of merged) {
-        if (iv.start > cursor) free.push({ start: cursor, end: iv.start });
-        cursor = Math.max(cursor, iv.end);
-      }
-      if (cursor < dRect.right) free.push({ start: cursor, end: dRect.right });
-
-      const mid = dRect.left + dRect.width / 2;
-      for (const iv of free) {
-        if (iv.end - iv.start < size) continue;
-        // A stretch that crosses the midpoint but is wide enough only on
-        // its right portion still counts as a right-half candidate,
-        // clipped to that portion.
-        const rightStart = Math.max(iv.start, mid);
-        if (iv.end - rightStart >= size) {
-          results.push({ start: rightStart, end: iv.end, y, rightHalf: true });
-        } else {
-          results.push({ start: iv.start, end: iv.end, y, rightHalf: false });
-        }
-      }
-    }
-
-    return results;
-  }
-
-  function pick(chosen: { start: number; end: number; y: number }, size: number): Placement {
-    const maxLeft = chosen.end - size;
-    const left = chosen.start + Math.random() * Math.max(0, maxLeft - chosen.start);
-    return {
-      left: left - sectionRect.left,
-      top: chosen.y - size - sectionRect.top,
-      size,
-    };
-  }
-
-  const sizes = sizesForViewport();
-
-  // Pass 1: right side is a strong preference — try every size, largest
-  // first, across every divider line, before ever accepting a left-side
-  // spot. Size stays fixed at each rung; position is what adapts.
-  for (const size of sizes) {
-    const rightCandidates = freeIntervalsAtSize(size).filter((c) => c.rightHalf);
-    if (rightCandidates.length === 0) continue;
-    const chosen = rightCandidates[Math.floor(Math.random() * rightCandidates.length)];
-    return pick(chosen, size);
-  }
-
-  // Pass 2: nothing on the right at any size down to the floor. A visible
-  // cat left of centre beats no cat, so fall back to any content-clear
-  // stretch, still largest size first.
-  for (const size of sizes) {
-    const anyCandidates = freeIntervalsAtSize(size);
-    if (anyCandidates.length === 0) continue;
-    const chosen = anyCandidates[Math.floor(Math.random() * anyCandidates.length)];
-    return pick(chosen, size);
-  }
-
-  return null;
+  return {
+    left: left - sectionRect.left,
+    top: chosen.y - size - sectionRect.top,
+    size,
+  };
 }
 
 export function SceneCat({
@@ -264,6 +271,10 @@ export function SceneCat({
   const [index, setIndex] = useState(startIndex);
   const [popKey, setPopKey] = useState(0);
   const [placement, setPlacement] = useState<Placement | null>(null);
+  // Bumped to force a recompute without touching `index` (which also
+  // restarts the pop-in animation and would make BoxReveal's own reveal
+  // look like a mood change). See the settle-recompute effect below.
+  const [settleTick, setSettleTick] = useState(0);
   const wasIntersectingRef = useRef(false);
   // A fresh IntersectionObserver fires once immediately on observe() with
   // whatever the current intersection state already is (e.g. the hero
@@ -291,6 +302,7 @@ export function SceneCat({
     const el = document.getElementById(sceneId);
     if (!el || typeof IntersectionObserver === 'undefined') return;
     hasSeenFirstCallbackRef.current = false;
+    let settleTimer: ReturnType<typeof setTimeout> | null = null;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -307,21 +319,41 @@ export function SceneCat({
           setIndex((i) => (i + 1) % VARIANT_POOL.length);
           setPopKey((k) => k + 1);
         }
+        // A scene's *first* arrival in view (unlike a later re-entry)
+        // doesn't bump `index`, so it wouldn't otherwise trigger the
+        // recompute effect below — but this is exactly the moment
+        // BoxReveal's cardboard box, sitting on top of the EntryRow list,
+        // starts (and ~1.3s later finishes) toppling out of the way. A
+        // placement computed right now would still see that box as an
+        // obstacle covering the row dividers; queue one more recompute
+        // timed to land after it's gone, so the freed-up space actually
+        // gets used instead of leaving a scene without a cat until the
+        // reader happens to scroll away and back. Harmless to also queue
+        // this on later re-entries — the box has already unmounted by
+        // then, and one extra measurement changes nothing.
+        if (isIntersecting && !wasIntersectingRef.current) {
+          if (settleTimer) clearTimeout(settleTimer);
+          settleTimer = setTimeout(() => setSettleTick((t) => t + 1), 1500);
+        }
         hasSeenFirstCallbackRef.current = true;
         wasIntersectingRef.current = isIntersecting;
       },
       { threshold: 0.2 }
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (settleTimer) clearTimeout(settleTimer);
+    };
   }, [mounted, motionEnabled, sceneId]);
 
   // Recomputes placement whenever the variant advances (so a re-entry
-  // moves the cat to a new valid spot on the line, not just a new mood)
-  // and once on mount. Measurement happens after paint (double rAF) so it
-  // reads real, settled layout rather than racing it, and is a pure read
-  // pass followed by a single state write rather than interleaved
-  // read/write calls that would thrash layout.
+  // moves the cat to a new valid spot on the line, not just a new mood),
+  // once on mount, and once more via `settleTick` after a scene's first
+  // reveal (see the intersection observer above). Measurement happens
+  // after paint (double rAF) so it reads real, settled layout rather than
+  // racing it, and is a pure read pass followed by a single state write
+  // rather than interleaved read/write calls that would thrash layout.
   useEffect(() => {
     if (!mounted) return;
     let raf1 = 0;
@@ -336,7 +368,7 @@ export function SceneCat({
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
     };
-  }, [mounted, sceneId, index]);
+  }, [mounted, sceneId, index, settleTick]);
 
   // Free intervals change with layout, so a resize needs the same
   // recompute — debounced onto a single rAF per burst of resize events.
