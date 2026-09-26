@@ -39,13 +39,24 @@ const VARIANT_POOL: Variant[] = [
   { mood: 'sad', cosmetic: 'sunglasses' },
 ];
 
-// Sizes tried, largest first: on a wide screen the divider lines are long
-// enough that the full-size cat almost always finds room. On a phone, a
-// project's date column above the line may be the only free stretch and
-// it can be narrower than 76px, so the cat shrinks in steps until it fits
-// or, at the smallest step, still doesn't — in which case it is omitted
-// for that scene entirely rather than ever drawn over text.
-const CAT_SIZES = [76, 64, 52, 40];
+// Sizes tried, largest first. Position, not size, is the thing that
+// should adapt to the layout: the search below looks across every
+// divider line in the scene (the header rule *and* every EntryRow's
+// bottom border) for a text-free stretch before ever stepping the size
+// down — a full-size cat almost always fits somewhere (the gap between
+// the header rule and the content below it, or the whitespace past a
+// short row), it just might not be under the specific line the search
+// checks first. 64px is a hard floor: below that the cat reads as a
+// speck rather than the site's mascot, so nothing renders rather than
+// shrinking further.
+const CAT_FLOOR = 64;
+const DESKTOP_SIZES = [112, 96, 80, CAT_FLOOR];
+const PHONE_SIZES = [84, 72, CAT_FLOOR];
+const PHONE_BREAKPOINT = 640;
+
+function sizesForViewport(): number[] {
+  return window.innerWidth < PHONE_BREAKPOINT ? PHONE_SIZES : DESKTOP_SIZES;
+}
 
 interface Placement {
   left: number;
@@ -113,13 +124,18 @@ function computePlacement(sceneEl: HTMLElement): Placement | null {
     .map((el) => el.getBoundingClientRect())
     .filter((r) => r.width > 0 && r.height > 0);
 
-  for (const size of CAT_SIZES) {
-    // A cosmetic (a hat, in particular) can render slightly above the
-    // cat sprite's own box — pad the text-avoidance strip so a brim never
+  // For a given size, the free (text-clear) intervals across every divider
+  // line in the scene, each tagged with which line it belongs to and
+  // whether it lies in that line's right half.
+  function freeIntervalsAtSize(
+    size: number
+  ): Array<{ start: number; end: number; y: number; rightHalf: boolean }> {
+    // A cosmetic (a hat, in particular) can render slightly above the cat
+    // sprite's own box — pad the text-avoidance strip so a brim never
     // lands on a glyph even though the wrapper box itself stays exactly
     // `size` tall.
     const pad = Math.round(size * 0.15);
-    const candidates: Array<{ start: number; end: number; y: number }> = [];
+    const results: Array<{ start: number; end: number; y: number; rightHalf: boolean }> = [];
 
     for (const { rect: dRect, y } of dividers) {
       const stripTop = y - size - pad;
@@ -143,32 +159,54 @@ function computePlacement(sceneEl: HTMLElement): Placement | null {
       }
       if (cursor < dRect.right) free.push({ start: cursor, end: dRect.right });
 
-      // Right-half only, as a hard rule rather than a mere preference: a
-      // candidate must be able to sit entirely at or past the divider's
-      // midpoint, so its centre always lands in the right half. A free
-      // stretch that only exists left of centre is never used — at this
-      // size, on this divider — even if it is wide enough, per the
-      // owner's "on the right side" requirement.
       const mid = dRect.left + dRect.width / 2;
       for (const iv of free) {
+        if (iv.end - iv.start < size) continue;
+        // A stretch that crosses the midpoint but is wide enough only on
+        // its right portion still counts as a right-half candidate,
+        // clipped to that portion.
         const rightStart = Math.max(iv.start, mid);
         if (iv.end - rightStart >= size) {
-          candidates.push({ start: rightStart, end: iv.end, y });
+          results.push({ start: rightStart, end: iv.end, y, rightHalf: true });
+        } else {
+          results.push({ start: iv.start, end: iv.end, y, rightHalf: false });
         }
       }
     }
 
-    if (candidates.length === 0) continue;
+    return results;
+  }
 
-    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+  function pick(chosen: { start: number; end: number; y: number }, size: number): Placement {
     const maxLeft = chosen.end - size;
     const left = chosen.start + Math.random() * Math.max(0, maxLeft - chosen.start);
-
     return {
       left: left - sectionRect.left,
       top: chosen.y - size - sectionRect.top,
       size,
     };
+  }
+
+  const sizes = sizesForViewport();
+
+  // Pass 1: right side is a strong preference — try every size, largest
+  // first, across every divider line, before ever accepting a left-side
+  // spot. Size stays fixed at each rung; position is what adapts.
+  for (const size of sizes) {
+    const rightCandidates = freeIntervalsAtSize(size).filter((c) => c.rightHalf);
+    if (rightCandidates.length === 0) continue;
+    const chosen = rightCandidates[Math.floor(Math.random() * rightCandidates.length)];
+    return pick(chosen, size);
+  }
+
+  // Pass 2: nothing on the right at any size down to the floor. A visible
+  // cat left of centre beats no cat, so fall back to any text-clear
+  // stretch, still largest size first.
+  for (const size of sizes) {
+    const anyCandidates = freeIntervalsAtSize(size);
+    if (anyCandidates.length === 0) continue;
+    const chosen = anyCandidates[Math.floor(Math.random() * anyCandidates.length)];
+    return pick(chosen, size);
   }
 
   return null;

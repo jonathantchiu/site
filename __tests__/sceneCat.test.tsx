@@ -185,6 +185,67 @@ describe('SceneCat', () => {
     cleanupScene();
   });
 
+  it('prefers full size over shrinking: a full-size spot on a second divider wins over a smaller spot on the first', async () => {
+    stubMatchMedia(false);
+    const section = document.createElement('section');
+    section.id = 'hero';
+    setRect(section, { left: 0, top: 0, right: 800, bottom: 400 });
+
+    // First divider (header rule): only a narrow, sub-64px gap free.
+    const headerDivider = document.createElement('div');
+    headerDivider.className = 'border-t border-hairline';
+    setRect(headerDivider, { left: 0, right: 800, top: 100, bottom: 100 });
+    section.appendChild(headerDivider);
+    const headerOccupied = document.createElement('span');
+    headerOccupied.textContent = 'heading';
+    setRect(headerOccupied, { left: 0, right: 770, top: 70, bottom: 95 });
+    section.appendChild(headerOccupied);
+
+    // Second divider (an EntryRow's bottom border): fully free, wide.
+    const rowDivider = document.createElement('div');
+    rowDivider.className = 'border-b border-hairline';
+    setRect(rowDivider, { left: 0, right: 800, top: 300, bottom: 300 });
+    section.appendChild(rowDivider);
+
+    document.body.appendChild(section);
+
+    const { container } = render(<SceneCat sceneId="hero" band="light" startIndex={0} />);
+    await flushPlacement();
+
+    const wrapper = container.querySelector('[aria-hidden="true"]') as HTMLElement;
+    expect(wrapper).not.toBeNull();
+    // Desktop ladder's largest size (112) should be used, on the second
+    // (wide-open) divider, not a shrunk size squeezed onto the first.
+    expect(parseFloat(wrapper.style.width)).toBe(112);
+    expect(parseFloat(wrapper.style.top) + 112).toBeCloseTo(300, 0);
+
+    section.remove();
+  });
+
+  it('falls back to a left-of-centre spot rather than omitting the cat when nothing fits on the right', async () => {
+    stubMatchMedia(false);
+    // The only free stretch, at every size down to the floor, sits left of
+    // centre (divider spans 0-800, centre 400; free interval is 0-150).
+    const cleanupScene = buildScene('hero', {
+      dividerRect: { left: 0, right: 800, top: 100, bottom: 100 },
+      occupied: [{ left: 150, right: 800, top: 70, bottom: 95 }],
+    });
+    const { container } = render(<SceneCat sceneId="hero" band="light" startIndex={0} />);
+
+    await flushPlacement();
+
+    const wrapper = container.querySelector('[aria-hidden="true"]') as HTMLElement;
+    expect(wrapper).not.toBeNull();
+    const left = parseFloat(wrapper.style.left);
+    const size = parseFloat(wrapper.style.width);
+    // Still full size (112, the largest desktop rung that fits in a
+    // 150px-wide gap) — falling back to the left side must not also
+    // force an unnecessary shrink.
+    expect(size).toBe(112);
+    expect(left + size).toBeLessThanOrEqual(150 + 0.01);
+    cleanupScene();
+  });
+
   it('renders no cat variant switching wrapper animation class under prefers-reduced-motion', async () => {
     stubMatchMedia(true);
     const cleanupScene = buildRoomyScene('hero');
