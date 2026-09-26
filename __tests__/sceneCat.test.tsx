@@ -222,6 +222,128 @@ describe('SceneCat', () => {
     section.remove();
   });
 
+  it('does not mistake a merely-decorative `border border-hairline` frame (e.g. the profile photo) for a divider line', async () => {
+    stubMatchMedia(false);
+    const section = document.createElement('section');
+    section.id = 'hero';
+    setRect(section, { left: 0, top: 0, right: 800, bottom: 400 });
+
+    const headerDivider = document.createElement('div');
+    headerDivider.className = 'border-t border-hairline';
+    setRect(headerDivider, { left: 0, right: 800, top: 100, bottom: 100 });
+    section.appendChild(headerDivider);
+
+    // A circular-framed photo below the header rule: `border` (all four
+    // sides) + `border-hairline`, same color class as a real divider, but
+    // no `border-t`/`border-b` — must not be treated as a second divider
+    // line to sit on.
+    const photo = document.createElement('img');
+    photo.className = 'rounded-full border border-hairline object-cover';
+    photo.src = 'profile.webp';
+    setRect(photo, { left: 0, right: 96, top: 150, bottom: 246 });
+    section.appendChild(photo);
+
+    document.body.appendChild(section);
+
+    const { container } = render(<SceneCat sceneId="hero" band="light" startIndex={0} />);
+    await flushPlacement();
+
+    const wrapper = container.querySelector('[aria-hidden="true"]') as HTMLElement;
+    expect(wrapper).not.toBeNull();
+    // Bottom-aligned to the one real divider (y=100), not to the photo's
+    // own bottom edge (246).
+    const top = parseFloat(wrapper.style.top);
+    const size = parseFloat(wrapper.style.width);
+    expect(top + size).toBeCloseTo(100, 0);
+
+    section.remove();
+  });
+
+  it('treats an <img> (e.g. the profile photo) as occupied even though it has no text', async () => {
+    stubMatchMedia(false);
+    const section = document.createElement('section');
+    section.id = 'hero';
+    setRect(section, { left: 0, top: 0, right: 800, bottom: 400 });
+
+    const divider = document.createElement('div');
+    divider.className = 'border-t border-hairline';
+    setRect(divider, { left: 0, right: 800, top: 200, bottom: 200 });
+    section.appendChild(divider);
+
+    // A photo, textless, sitting directly above the left two-thirds of
+    // the line — mirrors the hero's profile photo above its header rule.
+    const photo = document.createElement('img');
+    photo.src = 'profile.webp';
+    setRect(photo, { left: 0, right: 500, top: 100, bottom: 190 });
+    section.appendChild(photo);
+
+    document.body.appendChild(section);
+
+    const { container } = render(<SceneCat sceneId="hero" band="light" startIndex={0} />);
+    await flushPlacement();
+
+    const wrapper = container.querySelector('[aria-hidden="true"]') as HTMLElement;
+    expect(wrapper).not.toBeNull();
+    const left = parseFloat(wrapper.style.left);
+    const size = parseFloat(wrapper.style.width);
+    // Must not overlap the photo's 0-500 span.
+    expect(left).toBeGreaterThanOrEqual(500);
+    expect(left + size).toBeLessThanOrEqual(800 + 0.01);
+
+    section.remove();
+  });
+
+  it('excludes its own previously-placed sprite from the occlusion scan on recompute', async () => {
+    stubMatchMedia(false);
+    const observer = stubIntersectionObserver();
+    const section = document.createElement('section');
+    section.id = 'projects';
+    setRect(section, { left: 0, top: 0, right: 800, bottom: 400 });
+
+    const divider = document.createElement('div');
+    divider.className = 'border-b border-hairline';
+    setRect(divider, { left: 0, right: 800, top: 300, bottom: 300 });
+    section.appendChild(divider);
+    // React's createRoot fully owns whatever container it renders into —
+    // handing it `section` directly would wipe the divider we just
+    // appended. Render into a child mount point instead, sibling to the
+    // divider, so the cat wrapper still ends up a genuine descendant of
+    // `section` (which is what computePlacement scans) without React
+    // clobbering the rest of the scene's DOM.
+    const mountPoint = document.createElement('div');
+    section.appendChild(mountPoint);
+    document.body.appendChild(section);
+
+    render(<SceneCat sceneId="projects" band="dark" startIndex={0} />, { container: mountPoint });
+    await flushPlacement();
+
+    const wrapperBefore = section.querySelector('[aria-hidden="true"]') as HTMLElement;
+    expect(wrapperBefore).not.toBeNull();
+    // Give the mounted sprite <img> a real, non-zero rect so it would
+    // register as an obstacle if the exclusion didn't work.
+    const img = wrapperBefore.querySelector('img') as HTMLElement;
+    setRect(img, {
+      left: parseFloat(wrapperBefore.style.left),
+      right: parseFloat(wrapperBefore.style.left) + parseFloat(wrapperBefore.style.width),
+      top: parseFloat(wrapperBefore.style.top),
+      bottom: parseFloat(wrapperBefore.style.top) + parseFloat(wrapperBefore.style.width),
+    });
+
+    observer.fire(false);
+    await flushPlacement();
+    observer.fire(true);
+    await flushPlacement();
+
+    const wrapperAfter = section.querySelector('[aria-hidden="true"]') as HTMLElement;
+    expect(wrapperAfter).not.toBeNull();
+    // Still full size — if the old sprite had been treated as an
+    // obstacle sitting right on the line, the only way to avoid it would
+    // have been to shrink or shift away, not stay at 112.
+    expect(parseFloat(wrapperAfter.style.width)).toBe(112);
+
+    section.remove();
+  });
+
   it('falls back to a left-of-centre spot rather than omitting the cat when nothing fits on the right', async () => {
     stubMatchMedia(false);
     // The only free stretch, at every size down to the floor, sits left of

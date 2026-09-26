@@ -6,11 +6,14 @@ import type { CosmeticId, Mood } from '@/lib/cosmetics';
 
 // v3.2 spec: the cat now sits ON one of the scene's own hairline divider
 // lines (Scene.tsx's header rule, or any EntryRow's bottom border — both
-// share the literal `border-hairline` class, which is how this component
-// finds them without needing either component to opt in) instead of
-// floating in a side gutter. It sits toward the right side of whichever
+// share the literal `border-t border-hairline`/`border-b border-hairline`
+// class pair, which is how this component finds them without needing
+// either component to opt in — see the comment above the query below for
+// why *both* classes are required) instead of floating in a side gutter.
+// It sits toward the right side of whichever
 // line it lands on, and its x position is randomized only into the
-// stretches of that line that have no text sitting directly above them —
+// stretches of that line that have no visible content (text, images,
+// icons, background art) sitting directly above them —
 // measured at runtime against the scene's actual layout, never hardcoded,
 // so it keeps working if copy changes length. See computePlacement below.
 //
@@ -42,7 +45,7 @@ const VARIANT_POOL: Variant[] = [
 // Sizes tried, largest first. Position, not size, is the thing that
 // should adapt to the layout: the search below looks across every
 // divider line in the scene (the header rule *and* every EntryRow's
-// bottom border) for a text-free stretch before ever stepping the size
+// bottom border) for a content-free stretch before ever stepping the size
 // down — a full-size cat almost always fits somewhere (the gap between
 // the header rule and the content below it, or the whitespace past a
 // short row), it just might not be under the specific line the search
@@ -69,13 +72,31 @@ interface Interval {
   end: number;
 }
 
-// A leaf element (no element children) with real, non-whitespace text is
-// treated as "text-bearing" for occlusion purposes. This is deliberately
-// generic rather than a list of known selectors (headings, EntryRow's
+// Marks the cat's own wrapper so the occlusion scan below can exclude its
+// sprite and cosmetic images from "content the cat must avoid" — without
+// this, a still-mounted cat from the previous placement would read as an
+// obstacle to itself while a new placement is being computed.
+const SCENE_CAT_MARKER = 'data-scene-cat';
+
+function hasBackgroundImage(el: Element): boolean {
+  const bg = window.getComputedStyle(el).backgroundImage;
+  return Boolean(bg && bg !== 'none');
+}
+
+// Anything a reader would actually see and read as content counts as an
+// obstacle, not just text: <img>s (the profile photo, EntryRow logos,
+// project thumbnails), <svg>s (the cardboard box), anything painted via
+// background-image, and — as a fallback — any leaf element (no element
+// children) with real, non-whitespace text. This is deliberately generic
+// rather than a list of known selectors (headings, EntryRow's
 // title/subtitle/date, project hooks, the hover arrow, the section
-// number badge) so it keeps working if the page's copy or structure
-// changes without this file needing to change with it.
-function isTextBearing(el: Element): boolean {
+// number badge, a specific photo) so it keeps working if the page's
+// content changes without this file needing to change with it.
+function isOccludingElement(el: Element): boolean {
+  if (el.closest(`[${SCENE_CAT_MARKER}]`)) return false;
+  const tag = el.tagName.toLowerCase();
+  if (tag === 'img' || tag === 'svg') return true;
+  if (hasBackgroundImage(el)) return true;
   if (el.childElementCount > 0) return false;
   const text = el.textContent?.trim();
   return Boolean(text && text.length > 0);
@@ -103,12 +124,20 @@ function mergeIntervals(intervals: Interval[]): Interval[] {
   return merged;
 }
 
-// Reads every rect it needs up front (dividers, then text elements) before
+// Reads every rect it needs up front (dividers, then occluding elements) before
 // doing any math, so a caller running this inside a rAF does one
 // measurement pass rather than interleaving reads and writes.
 function computePlacement(sceneEl: HTMLElement): Placement | null {
   const sectionRect = sceneEl.getBoundingClientRect();
-  const dividerEls = Array.from(sceneEl.querySelectorAll<HTMLElement>('.border-hairline'));
+  // `border-hairline` alone is not enough to identify a divider: the same
+  // color class is also used on plain decorative framing (the profile
+  // photo's circular border, pill/card borders elsewhere) that sets
+  // `border` on all four sides rather than `border-t`/`border-b`. Require
+  // one of those two on the same element, matching exactly the two real
+  // divider shapes (Scene's header rule, an EntryRow's own row element).
+  const dividerEls = Array.from(
+    sceneEl.querySelectorAll<HTMLElement>('.border-t.border-hairline, .border-b.border-hairline')
+  );
   if (dividerEls.length === 0) return null;
 
   const dividers = dividerEls
@@ -119,19 +148,19 @@ function computePlacement(sceneEl: HTMLElement): Placement | null {
     .filter((d) => d.rect.width > 0);
   if (dividers.length === 0) return null;
 
-  const textRects = Array.from(sceneEl.querySelectorAll<HTMLElement>('*'))
-    .filter(isTextBearing)
+  const occludingRects = Array.from(sceneEl.querySelectorAll<HTMLElement>('*'))
+    .filter(isOccludingElement)
     .map((el) => el.getBoundingClientRect())
     .filter((r) => r.width > 0 && r.height > 0);
 
-  // For a given size, the free (text-clear) intervals across every divider
+  // For a given size, the free (content-clear) intervals across every divider
   // line in the scene, each tagged with which line it belongs to and
   // whether it lies in that line's right half.
   function freeIntervalsAtSize(
     size: number
   ): Array<{ start: number; end: number; y: number; rightHalf: boolean }> {
     // A cosmetic (a hat, in particular) can render slightly above the cat
-    // sprite's own box — pad the text-avoidance strip so a brim never
+    // sprite's own box — pad the content-avoidance strip so a brim never
     // lands on a glyph even though the wrapper box itself stays exactly
     // `size` tall.
     const pad = Math.round(size * 0.15);
@@ -141,11 +170,11 @@ function computePlacement(sceneEl: HTMLElement): Placement | null {
       const stripTop = y - size - pad;
       const stripBottom = y;
 
-      const occupied = textRects
-        .filter((tRect) => tRect.bottom > stripTop && tRect.top < stripBottom)
-        .map((tRect) => ({
-          start: Math.max(tRect.left, dRect.left),
-          end: Math.min(tRect.right, dRect.right),
+      const occupied = occludingRects
+        .filter((oRect) => oRect.bottom > stripTop && oRect.top < stripBottom)
+        .map((oRect) => ({
+          start: Math.max(oRect.left, dRect.left),
+          end: Math.min(oRect.right, dRect.right),
         }))
         .filter((iv) => iv.end > iv.start);
 
@@ -200,7 +229,7 @@ function computePlacement(sceneEl: HTMLElement): Placement | null {
   }
 
   // Pass 2: nothing on the right at any size down to the floor. A visible
-  // cat left of centre beats no cat, so fall back to any text-clear
+  // cat left of centre beats no cat, so fall back to any content-clear
   // stretch, still largest size first.
   for (const size of sizes) {
     const anyCandidates = freeIntervalsAtSize(size);
@@ -340,6 +369,7 @@ export function SceneCat({
       // re-entry restarts the pop-in for the newly-picked variant.
       key={motionEnabled ? popKey : 'static'}
       aria-hidden="true"
+      data-scene-cat=""
       className={`pointer-events-none ${animateClass}`}
       style={{
         position: 'absolute',
