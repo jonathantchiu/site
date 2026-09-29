@@ -16,7 +16,7 @@ const archivo = Archivo({
 
 export const metadata: Metadata = {
   title: 'Jonathan Chiu',
-  description: 'CS at UCLA. I build apps that make boring habits worth repeating.',
+  description: 'CS student at UCLA. Interned at SoFi on AI guardrails. Makes small apps on the side.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
