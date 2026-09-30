@@ -12,7 +12,7 @@ import type { Mood } from '@/lib/cosmetics';
 // - activity:   any of that input arrives
 // - pet:        the reader clicks or taps the cat
 // - settle:     SETTLE_MS in view with no mood change
-export const IDLE_MS = 8000;
+export const IDLE_MS = 4000;
 export const SETTLE_MS = 2500;
 export const QUICK_PASS_MS = 1200;
 

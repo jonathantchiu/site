@@ -12,13 +12,16 @@ import { assetPath } from '@/lib/assetPath';
 // Its spot is random on every visit, but always in blank space: after
 // layout settles it measures everything visible in the scene (text,
 // images, icons, the cat) and tries random positions until one clears all
-// of it by a margin. If none fits, it sits in the scene's top padding,
-// which is always empty. Client-only, so the static export never ships a
+// of it by a margin. It also stays out of the middle fifth of the width,
+// so it never reads as placed dead-center. If nothing fits, it sits in
+// the scene's top padding, which is always empty. Client-only, so the static export never ships a
 // pickup.
 const SIZE = 56;
 const MARGIN = 16;
 const EDGE = 16;
 const TRIES = 120;
+// Fraction of the scene width, centered, that a pickup may not overlap.
+const CENTER_BAND = 0.2;
 
 interface Spot {
   left: number;
@@ -30,8 +33,11 @@ function isObstacle(el: Element): boolean {
   if (el.matches('[data-scene-cat]')) return true;
   const tag = el.tagName.toLowerCase();
   if (tag === 'img' || tag === 'svg') return true;
-  if (el.childElementCount > 0) return false;
-  return Boolean(el.textContent?.trim());
+  // Any element with its own text counts, not just leaves: a paragraph
+  // with a link inside it still has text of its own around the link.
+  return Array.from(el.childNodes).some(
+    (n) => n.nodeType === Node.TEXT_NODE && Boolean(n.textContent?.trim())
+  );
 }
 
 function findSpot(section: HTMLElement): Spot {
@@ -49,15 +55,22 @@ function findSpot(section: HTMLElement): Spot {
 
   const maxLeft = box.width - SIZE - EDGE;
   const maxTop = box.height - SIZE - EDGE;
+  const bandStart = box.width * (0.5 - CENTER_BAND / 2);
+  const bandEnd = box.width * (0.5 + CENTER_BAND / 2);
+  const offCenter = (left: number) => left + SIZE <= bandStart || left >= bandEnd;
+  const randomLeft = () => EDGE + Math.random() * Math.max(0, maxLeft - EDGE);
+
   for (let i = 0; i < TRIES; i++) {
-    const left = EDGE + Math.random() * Math.max(0, maxLeft - EDGE);
+    const left = randomLeft();
     const top = EDGE + Math.random() * Math.max(0, maxTop - EDGE);
     const clear = obstacles.every(
       (o) => left + SIZE <= o.left || left >= o.right || top + SIZE <= o.top || top >= o.bottom
     );
-    if (clear) return { left, top };
+    if (clear && offCenter(left)) return { left, top };
   }
-  return { left: EDGE + Math.random() * Math.max(0, maxLeft - EDGE), top: EDGE };
+  let left = randomLeft();
+  for (let i = 0; i < TRIES && !offCenter(left); i++) left = randomLeft();
+  return { left, top: EDGE };
 }
 
 export function CosmeticPickup({ id, sceneId }: { id: CosmeticId; sceneId: string }) {
@@ -100,23 +113,16 @@ export function CosmeticPickup({ id, sceneId }: { id: CosmeticId; sceneId: strin
       aria-label={`Pick up the ${name.toLowerCase()}`}
       data-pickup={id}
       onClick={() => collect(id)}
-      className="game game-sticker pickup-pulse absolute z-10 flex cursor-pointer select-none items-center justify-center focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[var(--g-primary)]"
-      style={{
-        left: spot.left,
-        top: spot.top,
-        width: SIZE,
-        height: SIZE,
-        background: 'var(--g-gold-container)',
-        borderColor: 'var(--g-gold)',
-      }}
+      className="game absolute z-10 flex cursor-pointer select-none items-center justify-center rounded-lg [-webkit-tap-highlight-color:transparent] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[var(--g-primary)]"
+      style={{ left: spot.left, top: spot.top, width: SIZE, height: SIZE }}
     >
       <img
         src={assetPath(`/mascot/cosmetics/${id}.webp`)}
         alt=""
         draggable={false}
-        width={40}
-        height={40}
-        className="h-10 w-10 object-contain"
+        width={SIZE}
+        height={SIZE}
+        className="pickup-pulse object-contain"
       />
     </button>
   );
