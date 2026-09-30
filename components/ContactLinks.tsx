@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 
-// Contact links for the hero lede: a small icon beside each handle,
-// stacked one per line. Gmail and LinkedIn use their brand colors;
+// Contact links for the hero lede. From `sm` up: a small icon beside each
+// handle, stacked one per line. On phones: just the three icons in a row
+// as round buttons, with the handle kept for screen readers. Gmail and LinkedIn use their brand colors;
 // GitHub's mark is monochrome, so it takes --ink via currentColor.
 const LINKS: { label: string; text: string; href: string; icon: ReactNode }[] = [
   {
@@ -42,18 +43,18 @@ const LINKS: { label: string; text: string; href: string; icon: ReactNode }[] = 
 
 export function ContactLinks() {
   return (
-    <ul className="flex flex-col sm:items-end">
+    <ul className="flex flex-row gap-3 sm:flex-col sm:items-end sm:gap-0">
       {LINKS.map(({ label, text, href, icon }) => (
         <li key={label}>
           <a
             href={href}
             aria-label={`${label}: ${text}`}
-            className="group flex min-h-[44px] items-center gap-3 text-[0.9375rem] text-ink"
+            className="group flex h-11 w-11 items-center justify-center gap-3 rounded-full border border-hairline text-[0.9375rem] text-ink sm:h-auto sm:min-h-[44px] sm:w-auto sm:justify-start sm:rounded-none sm:border-0"
           >
-            <span aria-hidden="true" className="h-4 w-4 shrink-0 text-ink">
+            <span aria-hidden="true" className="h-5 w-5 shrink-0 text-ink sm:h-4 sm:w-4">
               {icon}
             </span>
-            <span className="underline decoration-hairline decoration-1 underline-offset-4 transition-colors group-hover:decoration-accent-text">
+            <span className="sr-only underline decoration-hairline sm:not-sr-only decoration-1 underline-offset-4 transition-colors group-hover:decoration-accent-text">
               {text}
             </span>
           </a>

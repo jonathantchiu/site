@@ -31,7 +31,7 @@ import {
 // readers still see the moods change, only without the hop, bounce,
 // floating z's and heart.
 const DESKTOP_SIZE = 104;
-const PHONE_SIZE = 80;
+const PHONE_SIZE = 64;
 const PHONE_BREAKPOINT = 640;
 const ACTIVITY_EVENTS = ['scroll', 'wheel', 'keydown', 'pointermove', 'pointerdown', 'touchstart'] as const;
 

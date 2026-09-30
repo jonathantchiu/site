@@ -6,7 +6,8 @@ import { COLLECTIBLES, onCollect, toggleEquipped, useInventory } from '@/lib/inv
 import { assetPath } from '@/lib/assetPath';
 
 // The cosmetic cache's UI (lib/inventory.ts): a round button fixed to the
-// bottom-right corner that opens a small menu for equipping what the
+// bottom-right corner (bottom-left on phones, so it never covers the
+// scene cats, which sit at the right edge there) that opens a small menu for equipping what the
 // reader has found, plus the "added to inventory" toast that appears
 // after each pickup. The button pulses briefly on each pickup so the
 // reader sees where the item went.
@@ -76,10 +77,10 @@ export function Inventory() {
   return (
     <div
       ref={rootRef}
-      className="game fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6"
+      className="game fixed bottom-4 left-4 z-40 flex flex-col items-start gap-3 sm:bottom-6 sm:left-auto sm:right-6 sm:items-end"
     >
       {toast ? (
-        <div role="status" className="game-card toast-in flex items-center gap-3 py-2 pl-3 pr-2">
+        <div role="status" className="game-card toast-in flex max-w-[calc(100vw-2rem)] items-center gap-3 py-2 pl-3 pr-2">
           <span className="game-tile flex h-10 w-10 shrink-0 items-center justify-center">
             <img src={assetPath(`/mascot/cosmetics/${toast}.webp`)} alt="" draggable={false} width={32} height={32} className="h-8 w-8 object-contain" />
           </span>
@@ -144,7 +145,7 @@ export function Inventory() {
           setOpen((o) => !o);
           setToast(null);
         }}
-        className={`game-sticker relative flex h-14 w-14 items-center justify-center ${pulsing ? 'inventory-pulse' : ''}`}
+        className={`game-sticker relative flex h-12 w-12 items-center sm:h-14 sm:w-14 justify-center ${pulsing ? 'inventory-pulse' : ''}`}
       >
         <BagIcon />
         {owned.length > 0 ? (

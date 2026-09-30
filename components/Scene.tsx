@@ -7,6 +7,8 @@ import type { ReactNode } from 'react';
 // on wide screens (stacked beneath on phones), a hairline rule under that
 // header block, then arbitrary children.
 //
+// On phones a scene is only as tall as its content; a full screen each
+// left big empty gaps between short sections. From `sm` up it is
 // `min-h-[100svh]`, never `h-screen`/`100vh` and never `overflow: hidden`:
 // small-viewport height ignores mobile browser chrome, and if a section's
 // content is taller than the viewport it must push the section taller
@@ -38,7 +40,7 @@ export function Scene({ id, number, heading, band, level = 'h2', lede, children 
     <section
       id={id}
       data-band={band}
-      className="relative flex min-h-[100svh] flex-col justify-center px-4 py-20 sm:px-8"
+      className="relative flex flex-col justify-center px-4 py-14 sm:min-h-[100svh] sm:px-8 sm:py-20"
     >
       <span
         aria-hidden="true"

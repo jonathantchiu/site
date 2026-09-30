@@ -9,12 +9,16 @@ export interface EntryRowProps {
   date: string;
   blurb?: string; // one sentence
   external?: boolean;
+  // Home page only: on phones, drop the blurb and move the date up onto
+  // the title line, so each row is two short lines instead of five. From
+  // `sm` up the row renders exactly as without it.
+  compact?: boolean;
 }
 
 const ROW_CLASS =
   'group flex min-h-[44px] flex-col items-stretch gap-1 border-b border-hairline py-5 transition-colors duration-200 hover:text-accent-text sm:flex-row sm:items-start sm:gap-4 sm:py-6';
 
-export function EntryRow({ href, logo, title, subtitle, date, blurb, external }: EntryRowProps) {
+export function EntryRow({ href, logo, title, subtitle, date, blurb, external, compact }: EntryRowProps) {
   const content = (
     <>
       <div className="flex min-w-0 flex-1 items-start gap-3">
@@ -27,23 +31,38 @@ export function EntryRow({ href, logo, title, subtitle, date, blurb, external }:
             className="mt-0.5 h-8 w-8 shrink-0 rounded object-contain"
           />
         ) : null}
-        <div className="min-w-0">
-          <span className="entry-title block truncate text-ink group-hover:text-accent-text">
-            {title}
-          </span>
+        <div className={`min-w-0 ${compact ? 'grow sm:grow-0' : ''}`}>
+          {compact ? (
+            <div className="flex items-baseline gap-3 sm:block">
+              <span className="entry-title block min-w-0 truncate text-ink group-hover:text-accent-text">
+                {title}
+              </span>
+              <span className="ml-auto shrink-0 text-sm text-muted sm:hidden">{date}</span>
+            </div>
+          ) : (
+            <span className="entry-title block truncate text-ink group-hover:text-accent-text">
+              {title}
+            </span>
+          )}
           {/* Explicit text-ink, not left to inherit: a color-scoped
               ancestor (app/globals.css's `[data-band] { color: var(--ink) }`)
               covers elements with no color class, but this one names its
               token directly so it can never regress into that trap again. */}
           <p className="mt-1 text-lg text-ink">{subtitle}</p>
-          {blurb ? <p className="mt-1 max-w-measure text-[17px] text-muted">{blurb}</p> : null}
+          {blurb ? (
+            <p className={`mt-1 max-w-measure text-[17px] text-muted ${compact ? 'hidden sm:block' : ''}`}>
+              {blurb}
+            </p>
+          ) : null}
         </div>
       </div>
 
       {/* Below sm this sits on its own line under the title block; a fixed
           date column on the same row squeezed the blurb to one word per
           line at 390px. */}
-      <div className="mt-1 flex shrink-0 items-center gap-3 sm:mt-0 sm:pt-0.5">
+      <div
+        className={`mt-1 shrink-0 items-center gap-3 sm:mt-0 sm:flex sm:pt-0.5 ${compact ? 'hidden' : 'flex'}`}
+      >
         <span className="text-[17px] text-muted sm:text-right">{date}</span>
         <span
           aria-hidden="true"

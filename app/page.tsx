@@ -44,7 +44,10 @@ export default function Home() {
           </div>
         </div>
         <CosmeticPickup id="sunglasses" sceneId="hero" />
-        <SceneCat sceneId="hero" className="mt-4 self-end sm:-mt-24" />
+        <SceneCat
+          sceneId="hero"
+          className="order-first mb-[41px] mt-[-105px] self-end sm:order-none sm:mb-0 sm:-mt-24"
+        />
       </Scene>
 
       <Scene id="experience" number="02" heading="Experience" band="warm">
@@ -54,6 +57,7 @@ export default function Home() {
                 {ROLES.map((role, i) => (
                   <Reveal key={role.id} delay={i * 0.08}>
                     <EntryRow
+                      compact
                       href={`/experience#${role.id}`}
                       logo={role.logo}
                       title={role.org}
@@ -72,7 +76,7 @@ export default function Home() {
               </Link>
           </div>
         </div>
-        <SceneCat sceneId="experience" className="mt-4 self-start sm:-mt-11 sm:self-end" />
+        <SceneCat sceneId="experience" className="-mt-11 self-end" />
       </Scene>
 
       <Scene id="projects" number="03" heading="Projects" band="dark">
@@ -82,6 +86,7 @@ export default function Home() {
                 {featured.map((project, i) => (
                   <Reveal key={project.slug} delay={i * 0.08}>
                     <EntryRow
+                      compact
                       href={`/projects/${project.slug}`}
                       logo={`${project.cover}-480.webp`}
                       title={project.title}
@@ -100,7 +105,7 @@ export default function Home() {
           </div>
         </div>
         <CosmeticPickup id="chef-hat" sceneId="projects" />
-        <SceneCat sceneId="projects" className="mt-4 self-start sm:-mt-11 sm:self-end" />
+        <SceneCat sceneId="projects" className="-mt-11 self-end" />
       </Scene>
 
       <Inventory />
