@@ -20,7 +20,7 @@ function itemName(id: CosmeticId): string {
 
 function BagIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6">
       <path d="M6 8h12l-1 12H7L6 8Z" />
       <path d="M9 8V6a3 3 0 0 1 6 0v2" />
     </svg>
@@ -74,21 +74,24 @@ export function Inventory() {
   if (!mounted) return null;
 
   return (
-    <div ref={rootRef} className="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+    <div
+      ref={rootRef}
+      className="game fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6"
+    >
       {toast ? (
-        <div
-          role="status"
-          className="toast-in flex items-center gap-3 rounded-full border border-hairline bg-card py-1.5 pl-2 pr-1.5 text-[0.9375rem] text-ink shadow-lg"
-        >
-          <img src={assetPath(`/mascot/cosmetics/${toast}.webp`)} alt="" width={28} height={28} className="h-7 w-7 object-contain" />
-          <span>
-            {itemName(toast)} added to inventory
+        <div role="status" className="game-card toast-in flex items-center gap-3 py-2 pl-3 pr-2">
+          <span className="game-tile flex h-10 w-10 shrink-0 items-center justify-center">
+            <img src={assetPath(`/mascot/cosmetics/${toast}.webp`)} alt="" draggable={false} width={32} height={32} className="h-8 w-8 object-contain" />
+          </span>
+          <span className="flex flex-col items-start gap-1">
+            <span className="game-ribbon game-ribbon--gold">New!</span>
+            <span className="text-[0.9375rem] font-semibold">{itemName(toast)} added to inventory</span>
           </span>
           <button
             type="button"
             aria-label="Dismiss"
             onClick={() => setToast(null)}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-muted hover:text-ink"
+            className="game-sticker ml-1 flex h-8 w-8 shrink-0 items-center justify-center text-base font-bold leading-none"
           >
             ×
           </button>
@@ -96,28 +99,33 @@ export function Inventory() {
       ) : null}
 
       {open ? (
-        <div
-          id="inventory-menu"
-          className="w-64 rounded-2xl border border-hairline bg-card p-3 text-ink shadow-lg"
-        >
-          <p className="px-1 pb-2 text-sm font-semibold">Inventory</p>
+        <div id="inventory-menu" className="game-card w-72 p-4">
+          <div className="mb-3 flex items-baseline justify-between">
+            <p className="text-lg font-bold">Inventory</p>
+            <p className="game-hand text-base text-[var(--g-muted)]">~ dress up the cats ~</p>
+          </div>
           {owned.length === 0 ? (
-            <p className="px-1 pb-1 text-sm text-muted">Nothing yet. A couple of things on this page can be picked up.</p>
+            <p className="game-hand text-lg text-[var(--g-muted)]">Nothing yet. Some things on this page can be picked up!</p>
           ) : (
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col gap-3">
               {owned.map((id) => {
                 const on = equipped.includes(id);
                 return (
-                  <li key={id}>
+                  <li key={id} className="flex items-center gap-3">
+                    <span className="game-tile flex h-12 w-12 shrink-0 items-center justify-center">
+                      <img src={assetPath(`/mascot/cosmetics/${id}.webp`)} alt="" draggable={false} width={36} height={36} className="h-9 w-9 object-contain" />
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-col items-start gap-1">
+                      <span className="text-[0.9375rem] font-semibold">{itemName(id)}</span>
+                      {on ? <span className="game-ribbon game-ribbon--mint">Equipped</span> : null}
+                    </span>
                     <button
                       type="button"
-                      aria-pressed={on}
+                      aria-label={`${on ? 'Unequip' : 'Equip'} ${itemName(id).toLowerCase()}`}
                       onClick={() => toggleEquipped(id)}
-                      className="flex w-full items-center gap-3 rounded-xl px-2 py-1.5 text-left hover:bg-page"
+                      className={`game-btn ${on ? 'game-btn--quiet' : ''}`}
                     >
-                      <img src={assetPath(`/mascot/cosmetics/${id}.webp`)} alt="" width={32} height={32} className="h-8 w-8 object-contain" />
-                      <span className="flex-1 text-[0.9375rem]">{itemName(id)}</span>
-                      <span className={`text-sm ${on ? 'text-accent-text' : 'text-muted'}`}>{on ? 'Equipped' : 'Equip'}</span>
+                      {on ? 'Unequip' : 'Equip'}
                     </button>
                   </li>
                 );
@@ -136,11 +144,14 @@ export function Inventory() {
           setOpen((o) => !o);
           setToast(null);
         }}
-        className={`relative flex h-12 w-12 items-center justify-center rounded-full border border-hairline bg-card text-ink shadow-md hover:text-accent-text ${pulsing ? 'inventory-pulse' : ''}`}
+        className={`game-sticker relative flex h-14 w-14 items-center justify-center ${pulsing ? 'inventory-pulse' : ''}`}
       >
         <BagIcon />
         {owned.length > 0 ? (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-accent-text px-1 text-[11px] font-semibold text-card">
+          <span
+            className="absolute -right-1.5 -top-1.5 flex h-6 min-w-[1.5rem] items-center justify-center rounded-full px-1 text-xs font-bold text-white"
+            style={{ background: 'var(--g-gold)', border: '2px solid var(--g-outline)' }}
+          >
             {owned.length}
           </span>
         ) : null}

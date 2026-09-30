@@ -147,50 +147,139 @@ code {
   letter-spacing: -0.01em;
 }
 
-/* Cardboard box reveal (components/BoxReveal.tsx, components/CardboardBox.tsx).
-   `box-sitting` is the resting pose: rotated slightly so the box reads as
-   dropped onto the section rather than placed dead-center. `box-tumble` is
-   the unattended path (nobody clicked, it just topples on its own).
-   `box-knocked` is the click path: a sharper flinch before it goes.
-   Durations here must match ACTIVE_DURATION / BOX_DELAY in BoxReveal.tsx
-   (550ms box animation starting 300ms into a 900ms total sequence) so the
-   overlay unmounts right as everything finishes, not before or after. */
-.box-sitting {
-  transform: rotate(-2deg) scale(1.03);
+/* The scene cat's one-shot reactions (components/SceneCat.tsx): a hop
+   when it wakes up, a squash-and-bounce when petted, a heart that floats
+   off after a pet, and drifting z's while it sleeps. The reduced-motion
+   block below cuts all of them to a single frame. */
+/* The cat game (components/SceneCat.tsx, CosmeticPickup.tsx,
+   Inventory.tsx) borrows Bento's "Kawaii Sunroom" look so it reads as a
+   piece of that app: Fredoka type, flat sakura/mint/gold fills, chunky 3px
+   rose-taupe borders and hard offset "sticker" shadows, never blurred
+   ones. Gold is kept for rewards (pickups, the item count, "new"), the
+   same rule Bento follows. Values come from Bento's src/theme/theme.ts,
+   scoped to .game rather than :root so they never leak into the site. */
+.game {
+  --g-primary: #DE5A7E;
+  --g-mint: #3FA69C;
+  --g-on-mint-container: #1A4A46;
+  --g-gold: #E9A030;
+  --g-gold-container: #FFF0D4;
+  --g-surface-container: #FFECE8;
+  --g-surface-high: #FFE0D8;
+  --g-ink: #2A1924;
+  --g-muted: #6A5A63;
+  --g-outline: #C7A6A6;
+  --g-shadow: #A07070;
+  font-family: var(--font-game), var(--font-body), sans-serif;
+  color: var(--g-ink);
 }
 
-@keyframes box-tumble-auto {
-  0% {
-    transform: rotate(-2deg) scale(1.03) translate(0, 0);
-    opacity: 1;
-  }
-  100% {
-    transform: rotate(-40deg) scale(1.03) translate(-18%, 65%);
-    opacity: 0;
-  }
+.game-hand {
+  font-family: var(--font-hand), cursive;
 }
 
-.box-tumble {
-  animation: box-tumble-auto 550ms ease-in forwards;
+.game-card {
+  background: #FFFFFF;
+  border: 3px solid var(--g-outline);
+  border-radius: 20px;
+  box-shadow: 4px 5px 0 var(--g-shadow);
 }
 
-@keyframes box-tumble-knocked {
-  0% {
-    transform: rotate(-2deg) scale(1.03) translate(0, 0);
-    opacity: 1;
-  }
-  25% {
-    transform: rotate(10deg) scale(1.03) translate(5%, -3%);
-    opacity: 1;
-  }
-  100% {
-    transform: rotate(58deg) scale(1.03) translate(75%, 50%);
-    opacity: 0;
-  }
+.game-sticker {
+  background: var(--g-surface-container);
+  border: 3px solid var(--g-outline);
+  border-radius: 999px;
+  box-shadow: 2px 3px 0 var(--g-shadow);
+  transition: transform 80ms ease, box-shadow 80ms ease;
 }
 
-.box-knocked {
-  animation: box-tumble-knocked 550ms cubic-bezier(0.3, 0.7, 0.4, 1) forwards;
+.game-sticker:active {
+  transform: translate(2px, 3px);
+  box-shadow: 0 0 0 var(--g-shadow);
+}
+
+.game-tile {
+  background: var(--g-surface-high);
+  border: 2px solid var(--g-outline);
+  border-radius: 12px;
+}
+
+/* Bento's StoneButton: presses down into its own shadow. */
+.game-btn {
+  font-family: var(--font-game), sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1;
+  padding: 0.5rem 0.875rem;
+  border: 3px solid var(--g-outline);
+  border-radius: 14px;
+  background: var(--g-primary);
+  color: #FFFFFF;
+  box-shadow: 3px 4px 0 var(--g-shadow);
+  transition: transform 80ms ease, box-shadow 80ms ease;
+}
+
+.game-btn:active {
+  transform: translateY(3px);
+  box-shadow: 1px 1px 0 var(--g-shadow);
+}
+
+.game-btn--quiet {
+  background: #FFFFFF;
+  color: var(--g-ink);
+}
+
+/* Bento's Ribbon: a tilted uppercase pill. */
+.game-ribbon {
+  display: inline-block;
+  border: 2px solid var(--g-outline);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-family: var(--font-game), sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  transform: rotate(-1.5deg);
+}
+
+.game-ribbon--mint {
+  background: var(--g-mint);
+  border-color: var(--g-on-mint-container);
+}
+
+.game-ribbon--gold {
+  background: var(--g-gold);
+}
+
+@keyframes pickup-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 2px 3px 0 var(--g-shadow), 0 0 0 0 rgb(233 160 48 / 0.55); }
+  50% { transform: scale(1.08); box-shadow: 2px 3px 0 var(--g-shadow), 0 0 0 12px rgb(233 160 48 / 0); }
+}
+
+.pickup-pulse {
+  animation: pickup-pulse 1600ms ease-in-out infinite;
+}
+
+@keyframes inventory-pulse {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.18) rotate(-6deg); }
+  70% { transform: scale(0.96) rotate(3deg); }
+  100% { transform: scale(1); }
+}
+
+.inventory-pulse {
+  animation: inventory-pulse 500ms ease-out 2;
+}
+
+@keyframes toast-in {
+  from { transform: translateY(10px) rotate(-1deg); opacity: 0; }
+  to { transform: translateY(0) rotate(0); opacity: 1; }
+}
+
+.toast-in {
+  animation: toast-in 240ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* The scene cat's one-shot reactions (components/SceneCat.tsx): a hop

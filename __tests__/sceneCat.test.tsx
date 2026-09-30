@@ -184,6 +184,16 @@ describe('SceneCat', () => {
     expect(container.querySelector('.cat-heart')).not.toBeNull();
   });
 
+  it('keeps exactly one cat sprite no matter how many times it is petted', () => {
+    stubMatchMedia(false);
+    const fire = stubIntersectionObserver();
+    const { container } = render(<SceneCat sceneId="hero" />);
+    fire(true);
+    for (let i = 0; i < 4; i++) fireEvent.click(cat(container)!);
+    expect(container.querySelectorAll('img[src*="mascot/cat-"]')).toHaveLength(1);
+    expect(container.querySelectorAll('.cat-heart')).toHaveLength(1);
+  });
+
   it('is sad when the reader comes back after scrolling straight past', () => {
     stubMatchMedia(false);
     const fire = stubIntersectionObserver();

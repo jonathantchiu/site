@@ -26,7 +26,7 @@ import {
 // - sad next time if the reader scrolled past its scene without stopping
 //
 // Client-only and absent from the static export: nothing renders until
-// the post-mount effect flips `mounted`, same pattern as BoxReveal. A
+// the post-mount effect flips `mounted`, so the static export never ships one. A
 // no-JS reader sees no cat at all, never a broken one. Reduced-motion
 // readers still see the moods change, only without the hop, bounce,
 // floating z's and heart.
@@ -166,17 +166,18 @@ export function SceneCat({
         dispatch('pet');
         setAnim((a) => ({ kind: 'bounce', key: a.key + 1 }));
       }}
-      className={`relative shrink-0 cursor-pointer rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-text ${className}`}
+      className={`game relative shrink-0 cursor-pointer select-none rounded-full [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-[var(--g-primary)] ${className}`}
       style={{ width: size, height: size }}
     >
-
-      <span key={anim.key} className={`block h-full w-full ${animation}`}>
+      {/* Keys are prefixed because the heart below is a sibling keyed off
+          the same counter. Two siblings sharing a key made React leave the
+          old sprite behind on every pet, stacking copies of the cat. */}
+      <span key={`cat-${anim.key}`} className={`block h-full w-full ${animation}`}>
         <Mascot mood={mood} cosmetics={drawOrder(equipped)} size={size} />
       </span>
 
-
       {mood === 'sleep' && motionEnabled ? (
-        <span aria-hidden="true" className="pointer-events-none absolute -top-2 right-0 text-sm font-semibold text-muted">
+        <span aria-hidden="true" className="game-hand pointer-events-none absolute -top-3 right-0 text-lg text-[var(--g-muted)]">
           <span className="cat-zzz inline-block">z</span>
           <span className="cat-zzz inline-block [animation-delay:600ms]">z</span>
         </span>
@@ -184,9 +185,9 @@ export function SceneCat({
 
       {anim.kind === 'bounce' && motionEnabled ? (
         <span
-          key={anim.key}
+          key={`heart-${anim.key}`}
           aria-hidden="true"
-          className="cat-heart pointer-events-none absolute -top-3 left-1/2 text-lg text-accent-text"
+          className="cat-heart pointer-events-none absolute -top-4 left-1/2 text-xl text-[var(--g-primary)]"
         >
           ♥
         </span>

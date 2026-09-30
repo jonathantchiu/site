@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { Inventory } from '@/components/Inventory';
 import { CosmeticPickup } from '@/components/CosmeticPickup';
@@ -54,19 +54,28 @@ describe('inventory store', () => {
 });
 
 describe('pickups and the inventory menu', () => {
+  let section: HTMLElement;
+
   beforeEach(() => {
     window.localStorage.clear();
     resetInventoryForTests();
+    section = document.createElement('section');
+    section.id = 'projects';
+    document.body.appendChild(section);
   });
 
-  it('picking up an item hides it, shows a dismissable toast and pulses the button', () => {
+  afterEach(() => {
+    section.remove();
+  });
+
+  it('picking up an item hides it, shows a dismissable toast and pulses the button', async () => {
     render(
       <>
-        <CosmeticPickup id="chef-hat" />
+        <CosmeticPickup id="chef-hat" sceneId="projects" />
         <Inventory />
       </>
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Pick up the chef hat' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Pick up the chef hat' }));
     expect(screen.queryByRole('button', { name: 'Pick up the chef hat' })).toBeNull();
     expect(screen.getByRole('status').textContent).toContain('Chef hat added to inventory');
     expect(screen.getByRole('button', { name: 'Inventory' }).className).toContain('inventory-pulse');
@@ -78,7 +87,7 @@ describe('pickups and the inventory menu', () => {
     window.localStorage.setItem('cat-inventory-v1', JSON.stringify({ owned: ['chef-hat'], equipped: [] }));
     render(
       <>
-        <CosmeticPickup id="chef-hat" />
+        <CosmeticPickup id="chef-hat" sceneId="projects" />
         <Inventory />
       </>
     );
@@ -95,10 +104,13 @@ describe('pickups and the inventory menu', () => {
     );
     act(() => collect('sunglasses'));
     fireEvent.click(screen.getByRole('button', { name: 'Inventory' }));
-    const item = screen.getByRole('button', { name: /Sunglasses/ });
-    expect(item.getAttribute('aria-pressed')).toBe('false');
-    fireEvent.click(item);
-    expect(item.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(screen.getByRole('button', { name: 'Equip sunglasses' }));
     expect(readState().equipped).toEqual(['sunglasses']);
+    const unequip = screen.getByRole('button', { name: 'Unequip sunglasses' });
+    expect(unequip.textContent).toBe('Unequip');
+    expect(screen.getByText('Equipped')).toBeTruthy();
+    fireEvent.click(unequip);
+    expect(readState().equipped).toEqual([]);
+    expect(screen.getByRole('button', { name: 'Equip sunglasses' }).textContent).toBe('Equip');
   });
 });

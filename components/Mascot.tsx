@@ -33,6 +33,7 @@ function CosmeticDrop({
     <img
       src={src}
       alt=""
+      draggable={false}
       width={width}
       height={height}
       style={{
@@ -65,6 +66,7 @@ export function Mascot({
       <img
         src={assetPath(`/mascot/cat-${mood}.webp`)}
         alt=""
+        draggable={false}
         width={size}
         height={size}
         className="h-full w-full object-contain"

@@ -3,7 +3,6 @@ import { getFeaturedProjects } from '@/lib/projects';
 import { ROLES } from '@/lib/experience';
 import { EntryRow } from '@/components/EntryRow';
 import { Reveal } from '@/components/Reveal';
-import { BoxReveal } from '@/components/BoxReveal';
 import { SceneCat } from '@/components/SceneCat';
 import { Scene } from '@/components/Scene';
 import { assetPath } from '@/lib/assetPath';
@@ -44,14 +43,13 @@ export default function Home() {
             </p>
           </div>
         </div>
-        <CosmeticPickup id="sunglasses" className="left-1/2 top-6 -translate-x-1/2 sm:left-[42%] sm:top-8" />
+        <CosmeticPickup id="sunglasses" sceneId="hero" />
         <SceneCat sceneId="hero" className="mt-4 self-end sm:-mt-24" />
       </Scene>
 
       <Scene id="experience" number="02" heading="Experience" band="warm">
         <div className="flex flex-col items-stretch gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
           <div className="min-w-0 flex-1">
-            <BoxReveal>
               <div className="flex flex-col">
                 {ROLES.map((role, i) => (
                   <Reveal key={role.id} delay={i * 0.08}>
@@ -72,7 +70,6 @@ export default function Home() {
               >
                 All experience
               </Link>
-            </BoxReveal>
           </div>
         </div>
         <SceneCat sceneId="experience" className="mt-4 self-start sm:-mt-11 sm:self-end" />
@@ -81,7 +78,6 @@ export default function Home() {
       <Scene id="projects" number="03" heading="Projects" band="dark">
         <div className="flex flex-col items-stretch gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-10">
           <div className="min-w-0 flex-1">
-            <BoxReveal>
               <div className="flex flex-col">
                 {featured.map((project, i) => (
                   <Reveal key={project.slug} delay={i * 0.08}>
@@ -101,10 +97,9 @@ export default function Home() {
               >
                 All projects
               </Link>
-            </BoxReveal>
           </div>
         </div>
-        <CosmeticPickup id="chef-hat" className="left-1/2 top-4 -translate-x-1/2 sm:top-6" />
+        <CosmeticPickup id="chef-hat" sceneId="projects" />
         <SceneCat sceneId="projects" className="mt-4 self-start sm:-mt-11 sm:self-end" />
       </Scene>
 
