@@ -6,11 +6,9 @@ import { assetPath } from '@/lib/assetPath';
 
 // A cosmetic that mounts already at its final anchor position and eases its
 // opacity/transform in on the next frame, so hovering the mascot reads as
-// the item dropping onto it rather than popping in. This subtree is only
-// ever mounted by <Mascot> when cosmeticVisible is true, and that starts
-// false in every caller driven by real interaction (see SceneCat), so it
-// is never present in the static-exported HTML — the entrance state below
-// is a purely client-side, post-hydration effect, never a baked-in style.
+// the item dropping onto it rather than popping in. Its only caller,
+// SceneCat, renders nothing until after mount, so this is never present
+// in the static-exported HTML.
 function CosmeticDrop({
   src,
   anchor,
@@ -50,21 +48,16 @@ function CosmeticDrop({
 
 export function Mascot({
   mood = 'happy',
-  cosmetic,
-  cosmeticVisible = false,
+  cosmetics = [],
   size = 160,
 }: {
   mood?: Mood;
-  cosmetic?: CosmeticId;
-  // Spec motion effect 3: a cosmetic "drops onto" the mascot on hover.
-  // Defaults to hidden (not rendered at all — see CosmeticDrop) so a
-  // caller must opt in explicitly; a client wrapper like SceneCat flips
-  // this true in response to a real hover event.
-  cosmeticVisible?: boolean;
+  // Drawn in array order, so later items layer on top (pass glasses
+  // before hats). Each one drops in with CosmeticDrop when it first
+  // appears.
+  cosmetics?: CosmeticId[];
   size?: number;
 }) {
-  const anchor = cosmetic ? getAnchor(cosmetic, mood) : undefined;
-
   return (
     // overflow must stay visible: hat anchors have negative y and sit above
     // the top edge of the sprite box.
@@ -76,14 +69,18 @@ export function Mascot({
         height={size}
         className="h-full w-full object-contain"
       />
-      {cosmetic && anchor && cosmeticVisible && (
-        <CosmeticDrop
-          src={assetPath(`/mascot/cosmetics/${cosmetic}.webp`)}
-          anchor={anchor}
-          width={Math.round(anchor.width * size)}
-          height={Math.round(anchor.height * size)}
-        />
-      )}
+      {cosmetics.map((cosmetic) => {
+        const anchor = getAnchor(cosmetic, mood);
+        return (
+          <CosmeticDrop
+            key={cosmetic}
+            src={assetPath(`/mascot/cosmetics/${cosmetic}.webp`)}
+            anchor={anchor}
+            width={Math.round(anchor.width * size)}
+            height={Math.round(anchor.height * size)}
+          />
+        );
+      })}
     </div>
   );
 }

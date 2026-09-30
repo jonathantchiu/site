@@ -57,11 +57,9 @@ export function Scene({ id, number, heading, band, level = 'h2', lede, children 
 
         <div className="mt-8 border-t border-hairline sm:mt-10" />
 
-        {/* flex flex-col so SceneCat (v3.1: the cat, reworked) can use
-            order-first/order-last and self-start/self-end/self-center to
-            place itself above/below and left/right of the content block
-            below the `xl` breakpoint, where it renders in normal flow
-            rather than absolutely positioned — see components/SceneCat.tsx. */}
+        {/* flex flex-col so SceneCat, rendered in flow as the last child,
+            can pick its side with self-start/self-end — see
+            components/SceneCat.tsx. */}
         <div className="mt-10 flex flex-col sm:mt-14">{children}</div>
       </div>
     </section>

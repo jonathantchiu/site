@@ -8,14 +8,15 @@ import { SceneCat } from '@/components/SceneCat';
 import { Scene } from '@/components/Scene';
 import { assetPath } from '@/lib/assetPath';
 import { ContactLinks } from '@/components/ContactLinks';
+import { CosmeticPickup } from '@/components/CosmeticPickup';
+import { Inventory } from '@/components/Inventory';
 
 // Three full-viewport scenes (spec: v3 editorial layout), each on its own
-// color band (v3.1 spec: section color bands) and each showing its own cat
-// (v3.1 spec: the cat, reworked — components/SceneCat.tsx). Scene owns the
+// color band (v3.1 spec: section color bands). Scene owns the
 // number/heading/lede/hairline header block and the data-band attribute
-// that scopes the band's token overrides in app/globals.css; SceneCat is
-// an absolutely-positioned decoration that never sits inside BoxReveal's
-// own container, so it is never covered by the box overlay.
+// that scopes the band's token overrides in app/globals.css. Each scene
+// ends with its own SceneCat, placed in flow at a fixed spot chosen by the
+// className passed here, so it never covers content.
 export default function Home() {
   const featured = getFeaturedProjects();
 
@@ -43,7 +44,8 @@ export default function Home() {
             </p>
           </div>
         </div>
-        <SceneCat sceneId="hero" band="light" startIndex={0} />
+        <CosmeticPickup id="sunglasses" className="left-1/2 top-6 -translate-x-1/2 sm:left-[42%] sm:top-8" />
+        <SceneCat sceneId="hero" className="mt-4 self-end sm:-mt-24" />
       </Scene>
 
       <Scene id="experience" number="02" heading="Experience" band="warm">
@@ -73,7 +75,7 @@ export default function Home() {
             </BoxReveal>
           </div>
         </div>
-        <SceneCat sceneId="experience" band="warm" startIndex={2} />
+        <SceneCat sceneId="experience" className="mt-4 self-start sm:-mt-11 sm:self-end" />
       </Scene>
 
       <Scene id="projects" number="03" heading="Projects" band="dark">
@@ -102,8 +104,11 @@ export default function Home() {
             </BoxReveal>
           </div>
         </div>
-        <SceneCat sceneId="projects" band="dark" startIndex={5} />
+        <CosmeticPickup id="chef-hat" className="left-1/2 top-4 -translate-x-1/2 sm:top-6" />
+        <SceneCat sceneId="projects" className="mt-4 self-start sm:-mt-11 sm:self-end" />
       </Scene>
+
+      <Inventory />
     </>
   );
 }
